@@ -1,0 +1,4 @@
+encryptionsalt: v1:TrvhpT7Z0A0=:v1:M0kRCrCtFCD/njQU:iobo6X/Ha2eZL8t5b60DP+DQ69PVbw==
+config:
+  aws:region: us-west-2
+  lambda-mapper:PULUMI_CONFIG_PASSPHRASE: lambdamapperpulumi
