@@ -2303,11 +2303,11 @@ function normalizeXML(xmlString) {
 //     "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/reczwx2Pc6MQqHJcL/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
 //   verbose: false
 // }
-exports
-  .handler(body)
-  .then((response) => {
-    console.log("Test Result:", JSON.parse(response.body));
-  });
+// exports
+//   .handler(body)
+//   .then((response) => {
+//     console.log("Test Result:", JSON.parse(response.body));
+//   });
 
   function cleanJsonString(input) {
     // Remove escape slashes from the string
