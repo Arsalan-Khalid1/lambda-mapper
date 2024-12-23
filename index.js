@@ -29,12 +29,14 @@ const lambdaFunction = new aws.lambda.Function("mapperFunction", {
   runtime: "nodejs18.x", // Ensure the correct version
   role: lambdaRole.arn,
   handler: "mapper.handler", // Ensure the handler is correct in your Lambda code
-  code: new pulumi.asset.FileArchive("./"),
+  code: new pulumi.asset.FileArchive("./lambdaMapper.zip"),
   environment: {
     variables: {
       NODE_OPTIONS: "--enable-source-maps",
     },
   },
+  timeout: 30,
+  memorySize: 1024
 });
 
 // Define API Gateway
@@ -164,4 +166,4 @@ const deployment = new aws.apigateway.Deployment("deployment", {
 });
 
 // Export the API endpoint
-exports.url = pulumi.interpolate`${deployment.invokeUrl}process`;
+exports.url = pulumi.interpolate`${deployment.invokeUrl}/process`;

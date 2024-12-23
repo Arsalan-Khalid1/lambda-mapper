@@ -1,14 +1,10 @@
 const { Xslt, XmlParser } = require("xslt-processor");
-const { json2xml } = require("xml-js");
 const { parseStringPromise } = require("xml2js");
 const yaml = require("js-yaml");
 const axios = require("axios");
-const xsdValidator = require("xsd-schema-validator")
 const libxmljs = require("libxmljs")
-const js2xmlparser = require("js2xmlparser")
 const xml2js = require("xml2js")
 const xml2json = require('xml2json')
-const libxslt = require("libxslt")
 const xsltProcessor = require("xslt-processor")
 const fs = require("fs")
 const { xmlParse, xsltProcess } = xsltProcessor
@@ -235,8 +231,8 @@ exports.handler = async (event) => {
   logSteps = []
 
   try {
-    const body = event
-    // const body = JSON.parse(event.body)
+    // const body = event
+    const body = JSON.parse(event.body)
 
     const inputKeys = Object.keys(body)
 
@@ -1918,26 +1914,26 @@ function normalizeXML(xmlString) {
 //   input_format: "in_JSON",
 // }
 
-let body = {
-  in_YAML:
-    "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/recr1RGoaSKRxUbd0/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
-  in_JSON:
-    "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/rec786n3UYEyRNhiu/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
-  // in_XML:
-  //   "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/rec4u5NWYb3S69Ilh/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
-  // in_XSD:
-  //   "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/recgdWklBCmuVmxIE/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
-  // in_XSLT:
-  //   "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/recE38NCv8jviIMn6/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
-  // out_XSD:
-  //   "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/reczwx2Pc6MQqHJcL/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
-  verbose: true
-}
-exports
-  .handler(body)
-  .then((response) => {
-    console.log("Test Result:", JSON.parse(response.body));
-  });
+// let body = {
+//   in_YAML:
+//     "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/recr1RGoaSKRxUbd0/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
+//   in_JSON:
+//     "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/rec786n3UYEyRNhiu/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
+//   // in_XML:
+//   //   "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/rec4u5NWYb3S69Ilh/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
+//   // in_XSD:
+//   //   "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/recgdWklBCmuVmxIE/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
+//   // in_XSLT:
+//   //   "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/recE38NCv8jviIMn6/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
+//   // out_XSD:
+//   //   "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/reczwx2Pc6MQqHJcL/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
+//   verbose: true
+// }
+// exports
+//   .handler(body)
+//   .then((response) => {
+//     console.log("Test Result:", JSON.parse(response.body));
+//   });
 
   function cleanJsonString(input) {
     // Remove escape slashes from the string

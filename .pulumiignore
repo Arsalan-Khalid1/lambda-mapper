@@ -1,0 +1,6 @@
+node_modules/aws-sdk/ # Exclude AWS SDK (already available in Lambda environment)
+node_modules/.bin/
+tests/
+.git/
+*.log
+*.md

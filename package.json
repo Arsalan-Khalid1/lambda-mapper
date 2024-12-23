@@ -7,14 +7,12 @@
         "@pulumi/pulumi": "^3.0.0",
         "axios": "^1.7.7",
         "js-yaml": "^4.1.0",
-        "js2xmlparser": "^5.0.0",
         "libxmljs": "^1.0.11",
-        "libxslt": "^0.10.2",
-        "xml-js": "^1.6.11",
         "xml2js": "^0.6.2",
         "xml2json": "^0.12.0",
-        "xmldom": "^0.6.0",
-        "xsd-schema-validator": "^0.10.0",
         "xslt-processor": "^3.3.1"
+    },
+    "devDependencies": {
+        "esbuild": "^0.24.2"
     }
 }
