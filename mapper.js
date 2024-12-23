@@ -12,6 +12,8 @@ const { xmlParse, xsltProcess } = xsltProcessor
 let logSteps = [];
 const AIRTABLE_API_URL =
   "https://api.airtable.com/v0/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/";
+const CLOUD_EVENT_API_URL =
+  "https://api.airtable.com/v0/appW7fUkTEqqte9Jc/tblEbGgpBlm99SZwS/"
 const AIRTABLE_API_KEY =
   "patBu6X4Dgrvl2s8H.62e775086221aa3cb46b47de6d03b3c7ee20fc4e116be7d513e9150eb23afe05";
 
@@ -111,6 +113,118 @@ const uploadToAirtable = async (
     const outputUrl = `https://airtable.com/${baseId}/${tableId}/${response.data.records[0].id}`
     console.log(outputUrl)
     return uri === AIRTABLE_API_URL ? outputUrl : uri
+  } catch (error) {
+    console.error(
+      "Error uploading data to Airtable:",
+      error.response?.data || error.message
+    )
+    throw new Error(error)
+  }
+}
+
+const uploadToCloudEvent = async (
+  data,
+  uri = CLOUD_EVENT_API_URL,
+  baseId,
+  tableId
+) => {
+  // Extract baseId and tableId from API URL if they are not passed in
+  if (!baseId || !tableId) {
+    const { baseId: extractedBaseId, tableId: extractedTableId } =
+      extractBaseAndTableIdsFromApiUrl(uri)
+    baseId = baseId || extractedBaseId
+    tableId = tableId || extractedTableId
+  }
+
+  const url = uri ?? CLOUD_EVENT_API_URL
+  console.log({ url, baseId, tableId })
+
+  let payload
+
+  // Check if data is an object and stringify it before sending to Airtable
+  data = parseJsonStrings(data)
+  let contentValue =
+    typeof data === "object" ? JSON.stringify(data, null, 2) : data
+  contentValue = cleanJsonString(contentValue)
+
+  if (uri && uri !== CLOUD_EVENT_API_URL) {
+    const fieldsExisting = await getAirtableFields(uri)
+    if (fieldsExisting.length > 1) {
+      payload = {
+        records: [
+          {
+            fields: {
+              [fieldsExisting[1]]: contentValue, // Now, content is a string
+            },
+          },
+        ],
+      }
+    } else {
+      payload = {
+        records: [
+          {
+            fields: {
+              [fieldsExisting[0]]: contentValue, // Now, content is a string
+            },
+          },
+        ],
+      }
+    }
+    console.log("payload with uri ", payload)
+  } else {
+    payload = {
+      records: [
+        {
+          fields: {
+            Content: contentValue, // Now, content is a string
+          },
+        },
+      ],
+    }
+    console.log("payload without uri  ", payload)
+  }
+
+  // Now stringify the entire data object properly
+  try {
+    // Step 1: Create the record
+    const createResponse = await axios.post(url, payload, {
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    })
+
+    // Get the created record's ID
+    const recordId = createResponse.data.records[0].id
+    console.log("Created record ID:", recordId)
+
+    // Generate the output URL for the created record
+    const outputUrl = `https://airtable.com/${baseId}/${tableId}/${recordId}`
+    console.log("Output URL:", outputUrl)
+
+    // Step 2: Update the created record with the output URL
+    const updatePayload = {
+      records: [
+        {
+          id: recordId, // Use the recordId of the created record
+          fields: {
+            Content: `${contentValue}\n\nOutput URL: ${outputUrl}`, // Add the output URL to the existing content
+          },
+        },
+      ],
+    }
+
+    // Perform the update to the record
+    const updateResponse = await axios.patch(url, updatePayload, {
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    })
+
+    console.log("Updated record with output URL:", updateResponse.data)
+
+    return uri === CLOUD_EVENT_API_URL ? outputUrl : uri
   } catch (error) {
     console.error(
       "Error uploading data to Airtable:",
@@ -240,6 +354,10 @@ exports.handler = async (event) => {
     const inputData = {}
         // Fetch data from Airtable for each input key (URL)
     const verbose = body["verbose"] === true // Check if 'verbose' is true
+    let out_YAML;
+    let out_JSON;
+    let out_XML;
+
 
     // Fetch data from Airtable for each input key (URL), excluding 'verbose'
     for (const format of inputKeys) {
@@ -268,16 +386,27 @@ exports.handler = async (event) => {
       const result = await validateYAML(inputData["in_YAML"], logSteps, verbose)
       logSteps.push(...result.logSteps)
 
-      if (verbose) {
         if (result.out_YAML) {
-          logSteps.push(`out_YAML: ${result.out_YAML}`)
-        }
-        if (result.out_JSON) {
-          logSteps.push(`out_JSON: ${result.out_JSON}`)
-        }
-        if (result.out_XML) {
-          logSteps.push(`out_XML: ${result.out_XML}`)
-        }
+        out_YAML = await uploadToAirtable(
+          result.out_YAML
+        );
+        logSteps.push(`YAML uploaded to Airtable: ${out_YAML}`)
+      }
+
+          // Uploading out_JSON content to Airtable
+      if (result.out_JSON) {
+        out_JSON = await uploadToAirtable(
+          result.out_JSON
+        );
+        logSteps.push(`JSON uploaded to Airtable: ${out_JSON}`)
+      }
+
+      // Uploading out_XML content to Airtable
+      if (result.out_XML) {
+        out_XML = await uploadToAirtable(
+          result.out_XML
+        );
+        logSteps.push(`XML uploaded to Airtable: ${out_XML}`)
       }
     }
 
@@ -290,16 +419,27 @@ exports.handler = async (event) => {
       const result = await validateJSON(inputData["in_JSON"], logSteps, verbose)
       logSteps.push(...result.logSteps)
 
-      if (verbose) {
-        if (result.out_YAML) {
-          logSteps.push(`out_YAML: ${result.out_YAML}`)
-        }
-        if (result.out_JSON) {
-          logSteps.push(`out_JSON: ${result.out_JSON}`)
-        }
-        if (result.out_XML) {
-          logSteps.push(`out_XML: ${result.out_XML}`)
-        }
+      if (result.out_YAML) {
+        out_YAML = await uploadToAirtable(
+          result.out_YAML
+        );
+        logSteps.push(`YAML uploaded to Airtable: ${out_YAML}`)
+      }
+
+          // Uploading out_JSON content to Airtable
+      if (result.out_JSON) {
+        out_JSON = await uploadToAirtable(
+          result.out_JSON
+        );
+        logSteps.push(`JSON uploaded to Airtable: ${out_JSON}`)
+      }
+
+      // Uploading out_XML content to Airtable
+      if (result.out_XML) {
+        out_XML = await uploadToAirtable(
+          result.out_XML
+        );
+        logSteps.push(`XML uploaded to Airtable: ${out_XML}`)
       }
     }
 
@@ -313,16 +453,27 @@ exports.handler = async (event) => {
       const result = await validateXML(inputData["in_XML"], logSteps, verbose)
       logSteps.push(...result.logSteps)
 
-      if (verbose) {
-        if (result.out_YAML) {
-          logSteps.push(`out_YAML: ${result.out_YAML}`)
-        }
-        if (result.out_JSON) {
-          logSteps.push(`out_JSON: ${result.out_JSON}`)
-        }
-        if (result.out_XML) {
-          logSteps.push(`out_XML: ${result.out_XML}`)
-        }
+      if (result.out_YAML) {
+        out_YAML = await uploadToAirtable(
+          result.out_YAML
+        );
+        logSteps.push(`YAML uploaded to Airtable: ${out_YAML}`)
+      }
+
+          // Uploading out_JSON content to Airtable
+      if (result.out_JSON) {
+        out_JSON = await uploadToAirtable(
+          result.out_JSON
+        );
+        logSteps.push(`JSON uploaded to Airtable: ${out_JSON}`)
+      }
+
+      // Uploading out_XML content to Airtable
+      if (result.out_XML) {
+        out_XML = await uploadToAirtable(
+          result.out_XML
+        );
+        logSteps.push(`XML uploaded to Airtable: ${out_XML}`)
       }
     }
 
@@ -335,16 +486,27 @@ exports.handler = async (event) => {
       const result = await validateXSLT(inputData["in_XML"], logSteps, verbose)
       logSteps.push(...result.logSteps)
 
-      if (verbose) {
-        if (result.out_YAML) {
-          logSteps.push(`out_YAML: ${result.out_YAML}`)
-        }
-        if (result.out_JSON) {
-          logSteps.push(`out_JSON: ${result.out_JSON}`)
-        }
-        if (result.out_XML) {
-          logSteps.push(`out_XML: ${result.out_XML}`)
-        }
+      if (result.out_YAML) {
+        out_YAML = await uploadToAirtable(
+          result.out_YAML
+        );
+        logSteps.push(`YAML uploaded to Airtable: ${out_YAML}`)
+      }
+
+          // Uploading out_JSON content to Airtable
+      if (result.out_JSON) {
+        out_JSON = await uploadToAirtable(
+          result.out_JSON
+        );
+        logSteps.push(`JSON uploaded to Airtable: ${out_JSON}`)
+      }
+
+      // Uploading out_XML content to Airtable
+      if (result.out_XML) {
+        out_XML = await uploadToAirtable(
+          result.out_XML
+        );
+        logSteps.push(`XML uploaded to Airtable: ${out_XML}`)
       }
     }
 
@@ -361,18 +523,29 @@ exports.handler = async (event) => {
         inputData["in_JSON"],
         verbose
       )
-      logSteps.push(...result.logSteps)
 
-      if (verbose) {
-        if (result.out_YAML) {
-          logSteps.push(`out_YAML: ${result.out_YAML}`)
-        }
-        if (result.out_JSON) {
-          logSteps.push(`out_JSON: ${result.out_JSON}`)
-        }
-        if (result.out_XML) {
-          logSteps.push(`out_XML: ${result.out_XML}`)
-        }
+      logSteps.push(...result.logSteps)
+      if (result.out_YAML) {
+        out_YAML = await uploadToAirtable(
+          result.out_YAML
+        );
+        logSteps.push(`YAML uploaded to Airtable: ${out_YAML}`)
+      }
+
+          // Uploading out_JSON content to Airtable
+      if (result.out_JSON) {
+        out_JSON = await uploadToAirtable(
+          result.out_JSON
+        );
+        logSteps.push(`JSON uploaded to Airtable: ${out_JSON}`)
+      }
+
+      // Uploading out_XML content to Airtable
+      if (result.out_XML) {
+        out_XML = await uploadToAirtable(
+          result.out_XML
+        );
+        logSteps.push(`XML uploaded to Airtable: ${out_XML}`)
       }
     }
 
@@ -388,18 +561,29 @@ exports.handler = async (event) => {
         inputData["in_XML"],
         verbose
       )
-      logSteps.push(...result.logSteps)
 
-      if (verbose) {
-        if (result.out_YAML) {
-          logSteps.push(`out_YAML: ${result.out_YAML}`)
-        }
-        if (result.out_JSON) {
-          logSteps.push(`out_JSON: ${result.out_JSON}`)
-        }
-        if (result.out_XML) {
-          logSteps.push(`out_XML: ${result.out_XML}`)
-        }
+      logSteps.push(...result.logSteps)
+      if (result.out_YAML) {
+        out_YAML = await uploadToAirtable(
+          result.out_YAML
+        );
+        logSteps.push(`YAML uploaded to Airtable: ${out_YAML}`)
+      }
+
+          // Uploading out_JSON content to Airtable
+      if (result.out_JSON) {
+        out_JSON = await uploadToAirtable(
+          result.out_JSON
+        );
+        logSteps.push(`JSON uploaded to Airtable: ${out_JSON}`)
+      }
+
+      // Uploading out_XML content to Airtable
+      if (result.out_XML) {
+        out_XML = await uploadToAirtable(
+          result.out_XML
+        );
+        logSteps.push(`XML uploaded to Airtable: ${out_XML}`)
       }
     }
 
@@ -415,18 +599,29 @@ exports.handler = async (event) => {
         inputData["in_XML"],
         verbose
       )
-      logSteps.push(...result.logSteps)
 
-      if (verbose) {
-        if (result.out_YAML) {
-          logSteps.push(`out_YAML: ${result.out_YAML}`)
-        }
-        if (result.out_JSON) {
-          logSteps.push(`out_JSON: ${result.out_JSON}`)
-        }
-        if (result.out_XML) {
-          logSteps.push(`out_XML: ${result.out_XML}`)
-        }
+      logSteps.push(...result.logSteps)
+      if (result.out_YAML) {
+        out_YAML = await uploadToAirtable(
+          result.out_YAML
+        );
+        logSteps.push(`YAML uploaded to Airtable: ${out_YAML}`)
+      }
+
+          // Uploading out_JSON content to Airtable
+      if (result.out_JSON) {
+        out_JSON = await uploadToAirtable(
+          result.out_JSON
+        );
+        logSteps.push(`JSON uploaded to Airtable: ${out_JSON}`)
+      }
+
+      // Uploading out_XML content to Airtable
+      if (result.out_XML) {
+        out_XML = await uploadToAirtable(
+          result.out_XML
+        );
+        logSteps.push(`XML uploaded to Airtable: ${out_XML}`)
       }
     }
 
@@ -443,18 +638,29 @@ exports.handler = async (event) => {
         inputData["in_XML"],
         verbose
       )
-      logSteps.push(...result.logSteps)
 
-      if (verbose) {
-        if (result.out_YAML) {
-          logSteps.push(`out_YAML: ${result.out_YAML}`)
-        }
-        if (result.out_JSON) {
-          logSteps.push(`out_JSON: ${result.out_JSON}`)
-        }
-        if (result.out_XML) {
-          logSteps.push(`out_XML: ${result.out_XML}`)
-        }
+      logSteps.push(...result.logSteps)
+      if (result.out_YAML) {
+        out_YAML = await uploadToAirtable(
+          result.out_YAML
+        );
+        logSteps.push(`YAML uploaded to Airtable: ${out_YAML}`)
+      }
+
+          // Uploading out_JSON content to Airtable
+      if (result.out_JSON) {
+        out_JSON = await uploadToAirtable(
+          result.out_JSON
+        );
+        logSteps.push(`JSON uploaded to Airtable: ${out_JSON}`)
+      }
+
+      // Uploading out_XML content to Airtable
+      if (result.out_XML) {
+        out_XML = await uploadToAirtable(
+          result.out_XML
+        );
+        logSteps.push(`XML uploaded to Airtable: ${out_XML}`)
       }
     }
 
@@ -470,18 +676,29 @@ exports.handler = async (event) => {
         inputData["in_XSD"],
         verbose
       )
-      logSteps.push(...result.logSteps)
 
-      if (verbose) {
-        if (result.out_YAML) {
-          logSteps.push(`out_YAML: ${result.out_YAML}`)
-        }
-        if (result.out_JSON) {
-          logSteps.push(`out_JSON: ${result.out_JSON}`)
-        }
-        if (result.out_XML) {
-          logSteps.push(`out_XML: ${result.out_XML}`)
-        }
+      logSteps.push(...result.logSteps)
+      if (result.out_YAML) {
+        out_YAML = await uploadToAirtable(
+          result.out_YAML
+        );
+        logSteps.push(`YAML uploaded to Airtable: ${out_YAML}`)
+      }
+
+          // Uploading out_JSON content to Airtable
+      if (result.out_JSON) {
+        out_JSON = await uploadToAirtable(
+          result.out_JSON
+        );
+        logSteps.push(`JSON uploaded to Airtable: ${out_JSON}`)
+      }
+
+      // Uploading out_XML content to Airtable
+      if (result.out_XML) {
+        out_XML = await uploadToAirtable(
+          result.out_XML
+        );
+        logSteps.push(`XML uploaded to Airtable: ${out_XML}`)
       }
     }
 
@@ -499,18 +716,29 @@ exports.handler = async (event) => {
         verbose
       )
       // Push the logs into logSteps
-      logSteps.push(...result.logSteps)
 
-      if (verbose) {
-        if (result.out_YAML) {
-          logSteps.push(`out_YAML: ${result.out_YAML}`)
-        }
-        if (result.out_JSON) {
-          logSteps.push(`out_JSON: ${result.out_JSON}`)
-        }
-        if (result.out_XML) {
-          logSteps.push(`out_XML: ${result.out_XML}`)
-        }
+      logSteps.push(...result.logSteps)
+      if (result.out_YAML) {
+        out_YAML = await uploadToAirtable(
+          result.out_YAML
+        );
+        logSteps.push(`YAML uploaded to Airtable: ${out_YAML}`)
+      }
+
+          // Uploading out_JSON content to Airtable
+      if (result.out_JSON) {
+        out_JSON = await uploadToAirtable(
+          result.out_JSON
+        );
+        logSteps.push(`JSON uploaded to Airtable: ${out_JSON}`)
+      }
+
+      // Uploading out_XML content to Airtable
+      if (result.out_XML) {
+        out_XML = await uploadToAirtable(
+          result.out_XML
+        );
+        logSteps.push(`XML uploaded to Airtable: ${out_XML}`)
       }
     }
 
@@ -529,18 +757,29 @@ exports.handler = async (event) => {
       )
 
       // Push the logs into logSteps
-      logSteps.push(...result.logSteps)
 
-      if (verbose) {
-        if (result.out_YAML) {
-          logSteps.push(`out_YAML: ${result.out_YAML}`)
-        }
-        if (result.out_JSON) {
-          logSteps.push(`out_JSON: ${result.out_JSON}`)
-        }
-        if (result.out_XML) {
-          logSteps.push(`out_XML: ${result.out_XML}`)
-        }
+      logSteps.push(...result.logSteps)
+      if (result.out_YAML) {
+        out_YAML = await uploadToAirtable(
+          result.out_YAML
+        );
+        logSteps.push(`YAML uploaded to Airtable: ${out_YAML}`)
+      }
+
+          // Uploading out_JSON content to Airtable
+      if (result.out_JSON) {
+        out_JSON = await uploadToAirtable(
+          result.out_JSON
+        );
+        logSteps.push(`JSON uploaded to Airtable: ${out_JSON}`)
+      }
+
+      // Uploading out_XML content to Airtable
+      if (result.out_XML) {
+        out_XML = await uploadToAirtable(
+          result.out_XML
+        );
+        logSteps.push(`XML uploaded to Airtable: ${out_XML}`)
       }
     }
 
@@ -561,18 +800,29 @@ exports.handler = async (event) => {
       )
 
       // Push the logs into logSteps
-      logSteps.push(...result.logSteps)
 
-      if (verbose) {
-        if (result.out_YAML) {
-          logSteps.push(`out_YAML: ${result.out_YAML}`)
-        }
-        if (result.out_JSON) {
-          logSteps.push(`out_JSON: ${result.out_JSON}`)
-        }
-        if (result.out_XML) {
-          logSteps.push(`out_XML: ${result.out_XML}`)
-        }
+      logSteps.push(...result.logSteps)
+      if (result.out_YAML) {
+        out_YAML = await uploadToAirtable(
+          result.out_YAML
+        );
+        logSteps.push(`YAML uploaded to Airtable: ${out_YAML}`)
+      }
+
+          // Uploading out_JSON content to Airtable
+      if (result.out_JSON) {
+        out_JSON = await uploadToAirtable(
+          result.out_JSON
+        );
+        logSteps.push(`JSON uploaded to Airtable: ${out_JSON}`)
+      }
+
+      // Uploading out_XML content to Airtable
+      if (result.out_XML) {
+        out_XML = await uploadToAirtable(
+          result.out_XML
+        );
+        logSteps.push(`XML uploaded to Airtable: ${out_XML}`)
       }
     }
 
@@ -595,18 +845,29 @@ exports.handler = async (event) => {
       )
 
       // Push the logs into logSteps
-      logSteps.push(...result.logSteps)
 
-      if (verbose) {
-        if (result.out_YAML) {
-          logSteps.push(`out_YAML: ${result.out_YAML}`)
-        }
-        if (result.out_JSON) {
-          logSteps.push(`out_JSON: ${result.out_JSON}`)
-        }
-        if (result.out_XML) {
-          logSteps.push(`out_XML: ${result.out_XML}`)
-        }
+      logSteps.push(...result.logSteps)
+      if (result.out_YAML) {
+        out_YAML = await uploadToAirtable(
+          result.out_YAML
+        );
+        logSteps.push(`YAML uploaded to Airtable: ${out_YAML}`)
+      }
+
+          // Uploading out_JSON content to Airtable
+      if (result.out_JSON) {
+        out_JSON = await uploadToAirtable(
+          result.out_JSON
+        );
+        logSteps.push(`JSON uploaded to Airtable: ${out_JSON}`)
+      }
+
+      // Uploading out_XML content to Airtable
+      if (result.out_XML) {
+        out_XML = await uploadToAirtable(
+          result.out_XML
+        );
+        logSteps.push(`XML uploaded to Airtable: ${out_XML}`)
       }
     }
 
@@ -630,22 +891,33 @@ exports.handler = async (event) => {
       )
 
       // Push the logs into logSteps
-      logSteps.push(...result.logSteps)
 
-      if (verbose) {
-        if (result.out_YAML) {
-          logSteps.push(`out_YAML: ${result.out_YAML}`)
-        }
-        if (result.out_JSON) {
-          logSteps.push(`out_JSON: ${result.out_JSON}`)
-        }
-        if (result.out_XML) {
-          logSteps.push(`out_XML: ${result.out_XML}`)
-        }
+      logSteps.push(...result.logSteps)
+      if (result.out_YAML) {
+        out_YAML = await uploadToAirtable(
+          result.out_YAML
+        );
+        logSteps.push(`YAML uploaded to Airtable: ${out_YAML}`)
+      }
+
+          // Uploading out_JSON content to Airtable
+      if (result.out_JSON) {
+        out_JSON = await uploadToAirtable(
+          result.out_JSON
+        );
+        logSteps.push(`YAML uploaded to Airtable: ${out_YAML}`)
+      }
+
+      // Uploading out_XML content to Airtable
+      if (result.out_XML) {
+        out_XML = await uploadToAirtable(
+          result.out_XML
+        );
+        logSteps.push(`XML uploaded to Airtable: ${out_XML}`)
       }
     }
 
-    const output = await uploadToAirtable(logSteps)
+    const output = await uploadToCloudEvent(logSteps)
     return {
       statusCode: 200,
       headers: {
@@ -654,8 +926,13 @@ exports.handler = async (event) => {
         "Access-Control-Allow-Headers": "Content-Type, Authorization",
       },
       body: JSON.stringify({
-        logSteps: logSteps,
-        outputUrl: output,
+        logSteps, // Logs from the validation process
+        output, // Airtable upload URL
+        ...(verbose && {
+          out_YAML: out_YAML,
+          out_JSON: out_JSON,
+          out_XML: out_XML,
+        }), // Include only in verbose mode
       }),
     }
   } catch (error) {
@@ -734,14 +1011,23 @@ function validateYAML(inputData, logSteps, verbose = false) {
       }
     }
 
-    // Return only validation status for non-verbose mode
-    return true
+    // Return only validation status and logSteps for non-verbose mode
+    return {
+      success: true,
+      logSteps,
+    }
   } catch (e) {
     // Log the error
-    logSteps.push(`YAML validation failed: ${e.message}`)    // Return only the validation status for non-verbose mode
-    return false
+    logSteps.push(`YAML validation failed: ${e.message}`)
+
+    // Return validation status and logSteps
+    return {
+      success: false,
+      logSteps,
+    }
   }
 }
+
 
 
 // Validate JSON
@@ -764,14 +1050,23 @@ function validateJSON(inputData, logSteps, verbose = false) {
       }
     }
 
-    // Return only validation status for non-verbose mode
-    return true
+    // Return only validation status and logSteps for non-verbose mode
+    return {
+      success: true,
+      logSteps,
+    }
   } catch (e) {
     // Log the error
-    logSteps.push(`JSON validation failed: ${e.message}`)    // Return only the validation status for non-verbose mode
-    return false
+    logSteps.push(`JSON validation failed: ${e.message}`)
+
+    // Return validation status and logSteps
+    return {
+      success: false,
+      logSteps,
+    }
   }
 }
+
 
 
 function normalizeJSON(inputJSON) {
@@ -787,16 +1082,37 @@ function normalizeJSON(inputJSON) {
 }
 
 // Validate XML
-function validateXML(inputData, logSteps) {
+function validateXML(inputData, logSteps, verbose = false) {
   try {
     libxmljs.parseXml(inputData)
     logSteps.push("XML validation succeeded.")
-    return true
+    if (verbose) {
+      return {
+        logSteps,
+        success: true,
+        out_XML: inputData,
+      }
+    }
+    return {
+      success: true,
+      logSteps,
+    }
   } catch (e) {
     logSteps.push(`XML validation failed: ${e.message}`)
-    return false
+    if (verbose) {
+      return {
+        logSteps,
+        success: false,
+        error: e.message,
+      }
+    }
+    return {
+      success: false,
+      logSteps,
+    }
   }
 }
+
 
 // Validate XSD
 function validateXSD(inputData, xsdSchema, logSteps) {
@@ -834,12 +1150,20 @@ function validateXSD(inputData, xsdSchema, logSteps) {
 
 
 // Validate XSLT
-function validateXSLT(inputData, logSteps) {
+function validateXSLT(inputData, logSteps, verbose = false) {
   try {
     libxmljs.parseXml(inputData) // XSLT can be parsed as XML
     logSteps.push("XSLT validation succeeded.")
+    return {
+      success: true,
+      logSteps,
+    }
   } catch (e) {
     logSteps.push(`XSLT validation failed: ${e.message}`)
+    return {
+      success: false,
+      logSteps,
+    }
   }
 }
 
@@ -856,7 +1180,9 @@ async function validateYAMLAndJSON(in_YAML, in_JSON, verbose = false) {
   }
 
   // Validate in_YAML
-  const isYAMLValid = await validateYAML(in_YAML, logSteps)
+  let result = await validateYAML(in_YAML, logSteps)
+
+  const isYAMLValid = result.success
   logSteps.push(
     `in_YAML validation result: ${
       isYAMLValid ? "Success: YAML is valid" : "Error: YAML is invalid"
@@ -864,7 +1190,8 @@ async function validateYAMLAndJSON(in_YAML, in_JSON, verbose = false) {
   )
 
   // Validate in_JSON
-  const isJSONValid = await validateJSON(in_JSON, logSteps)
+  result = await validateJSON(in_JSON, logSteps)
+  const isJSONValid = result.success
   logSteps.push(
     `in_JSON validation result: ${
       isJSONValid ? "Success: JSON is valid" : "Error: JSON is invalid"
@@ -911,7 +1238,10 @@ async function validateYAMLAndJSON(in_YAML, in_JSON, verbose = false) {
     }
   }
 
-  return logSteps // Return only logSteps in non-verbose mode
+  return {
+    success: true,
+    logSteps
+  } // Return only logSteps in non-verbose mode
 }
 
 
@@ -1072,7 +1402,6 @@ async function validateYAMLAndXML(in_YAML, in_XML, verbose = false) {
     try {
       // Normalize the XML input
       in_XML = normalizeXML(in_XML)
-
       // Convert YAML to XML
       out_XML = YAMLtoXML(in_YAML)
 
@@ -1100,23 +1429,24 @@ async function validateYAMLAndXML(in_YAML, in_XML, verbose = false) {
       logSteps,
       out_YAML: in_YAML,
       out_JSON: out_JSON, // Result of YAML to XML conversion
-      out_XML: out_XML// Result of YAML to JSON conversion (if verbose)
+      out_XML: out_XML, // Result of YAML to JSON conversion (if verbose)
     }
   }
-
-  return logSteps // Return only logSteps in non-verbose mode
+  return {
+    success: true,
+    logSteps,
+  } // Return only logSteps in non-verbose mode // Return only logSteps in non-verbose mode
 }
 
 
 async function validateJSONAndXML(in_JSON, in_XML, verbose = false) {
   const logSteps = []
-  let isValidJSON = false
-  let isValidXML = false
   let out_XML, out_JSON
 
   // Validate in_JSON
   logSteps.push("Validating in_JSON...")
-  const isJSONValid = await validateJSON(in_JSON, logSteps)
+  let result = await validateJSON(in_JSON, logSteps)
+  let isJSONValid = result.success
   logSteps.push(
     `in_JSON validation result: ${
       isJSONValid ? "Success: JSON is valid" : "Error: JSON is invalid"
@@ -1140,7 +1470,8 @@ async function validateJSONAndXML(in_JSON, in_XML, verbose = false) {
 
     // Validate in_XML
     logSteps.push("Validating in_XML...")
-    const isXMLValid = await validateXML(in_XML, logSteps)
+    result = await validateXML(in_XML, logSteps)
+    let isXMLValid = result.success
     logSteps.push(
       `in_XML validation result: ${
         isXMLValid ? "Success: XML is valid" : "Error: XML is invalid"
@@ -1192,13 +1523,16 @@ async function validateJSONAndXML(in_JSON, in_XML, verbose = false) {
   if (verbose) {
     return {
       logSteps,
-      out_YAML: in_YAML,
+      // out_YAML: in_YAML,
       out_JSON: out_JSON, // Result of YAML to XML conversion
       out_XML: in_XML, // Converted XML (if verbose)
     }
   }
 
-  return logSteps // Return only logSteps in non-verbose mode
+  return {
+    success: true,
+    logSteps,
+  } // Return only logSteps in non-verbose mode // Return only logSteps in non-verbose mode
 }
 
 
@@ -1250,16 +1584,16 @@ async function validateYAMLandJSONandXML(in_YAML, in_JSON, in_XML, verbose = fal
   }
 
   in_JSON = normalizeJSON(in_JSON, logSteps)
-      // Convert in_JSON to a JavaScript object if it's a string
-      if (typeof in_JSON === "string") {
-        try {
-          in_JSON = JSON.parse(in_JSON)
-          logSteps.push("Success: in_JSON successfully parsed into an object")
-        } catch (parseError) {
-          logSteps.push("Error: Failed to parse in_JSON into an object")
-          return logSteps // Exit early if JSON is invalid
-        }
-      }
+  // Convert in_JSON to a JavaScript object if it's a string
+  if (typeof in_JSON === "string") {
+    try {
+      in_JSON = JSON.parse(in_JSON)
+      logSteps.push("Success: in_JSON successfully parsed into an object")
+    } catch (parseError) {
+      logSteps.push("Error: Failed to parse in_JSON into an object")
+      return logSteps // Exit early if JSON is invalid
+    }
+  }
 
   try {
     if (await validateXML(in_XML, logSteps)) {
@@ -1323,21 +1657,23 @@ async function validateYAMLandJSONandXML(in_YAML, in_JSON, in_XML, verbose = fal
   }
 
   // Return the validation steps
-  return logSteps
+  return {
+    success: true,
+    logSteps,
+  } // Return only logSteps in non-verbose mode
 }
 
-async function validateXMLAndXSD(in_XML, in_XSD) {
+async function validateXMLAndXSD(in_XML, in_XSD, verbose = false) {
   const logSteps = []
-
   try {
     // Step 1: Validate XML (using the existing validateXML function)
-    const isXMLValid = await validateXML(in_XML, logSteps)
+    let result = await validateXML(in_XML, logSteps)
+    let isXMLValid = result.success
     logSteps.push(
       `in_XML validation result: ${
         isXMLValid ? "Success: XML is valid" : "Error: XML is invalid"
       }`
     )
-
     // Step 2: Validate XSD (using the existing validateXSD function)
     const isXSDValid = await validateXSD(in_XML, in_XSD, logSteps) // Pass both XML data and XSD schema here
     logSteps.push(
@@ -1347,21 +1683,29 @@ async function validateXMLAndXSD(in_XML, in_XSD) {
     )
 
     // Step 3: If both XML and XSD are valid, proceed with XML validation against XSD
-    // if (isXMLValid && isXSDValid) {
-    //   const xmlDoc = libxmljs.parseXml(in_XML) // Parse XML for further validation
-    //   const xsdDoc = libxmljs.parseXml(in_XSD) // Parse XSD schema
+    if (isXMLValid && isXSDValid) {
+      const xmlDoc = libxmljs.parseXml(in_XML) // Parse XML for further validation
+      const xsdDoc = libxmljs.parseXml(in_XSD) // Parse XSD schema
 
-    //   if (xmlDoc.validate(xsdDoc)) {
-    //     logSteps.push("XML is compliant with the XSD")
-    //   } else {
-    //     logSteps.push("Error: XML is not compliant with the XSD")
-    //   }
-    // }
+      if (xmlDoc.validate(xsdDoc)) {
+        logSteps.push("XML is compliant with the XSD")
+      } else {
+        logSteps.push("Error: XML is not compliant with the XSD")
+      }
+    }
   } catch (e) {
     logSteps.push("Error: " + e.message)
   }
-
-  return logSteps
+  if (verbose){
+    return {
+      logSteps,
+      out_XML: in_XML
+    }
+  }
+  return {
+    success: true,
+    logSteps
+  }
 }
 
 
@@ -1380,7 +1724,7 @@ async function validateJSONAndXMLAndXSD(in_JSON, in_XML, in_XSD, verbose = false
     logSteps.push("Error: JSON is invalid")
   }
 
-      // Convert in_JSON to a JavaScript object if it's a string
+  // Convert in_JSON to a JavaScript object if it's a string
   if (typeof in_JSON === "string") {
     try {
       in_JSON = JSON.parse(in_JSON)
@@ -1443,7 +1787,10 @@ async function validateJSONAndXMLAndXSD(in_JSON, in_XML, in_XSD, verbose = false
     }
   }
 
-  return logSteps
+  return {
+    success: true,
+    logSteps,
+  } // Return only logSteps in non-verbose mode
 }
 
 async function validateYAMLandXMLandXSD(in_YAML, in_XML, in_XSD, verbose = false) {
@@ -1455,7 +1802,8 @@ async function validateYAMLandXMLandXSD(in_YAML, in_XML, in_XSD, verbose = false
   } catch (error) {
     logSteps.push("Error normalizing YAML: " + error.message)
   }
-  const isValidYAML = await validateYAML(in_YAML, logSteps)
+  let result = await validateYAML(in_YAML, logSteps)
+  const isValidYAML = result.success
   if (isValidYAML) {
     logSteps.push("YAML is valid")
   } else {
@@ -1463,7 +1811,9 @@ async function validateYAMLandXMLandXSD(in_YAML, in_XML, in_XSD, verbose = false
   }
 
   // Step 2: Validate XML
-  const isValidXML = await validateXML(in_XML, logSteps)
+
+  result = await validateXML(in_XML, logSteps)
+  const isValidXML = result.success
   if (isValidXML) {
     logSteps.push("XML is valid")
   } else {
@@ -1489,7 +1839,7 @@ async function validateYAMLandXMLandXSD(in_YAML, in_XML, in_XSD, verbose = false
   }
 
   // Step 5: Compare YAML-Converted XML with the Provided XML
-   in_XML = normalizeXML(in_XML)
+  in_XML = normalizeXML(in_XML)
   if (isValidYAML && isValidXML && isCompliantXML) {
     if (convertedYAMLtoXML === in_XML) {
       logSteps.push(
@@ -1501,7 +1851,6 @@ async function validateYAMLandXMLandXSD(in_YAML, in_XML, in_XSD, verbose = false
   }
   const out_JSON = YAMLtoJSON(in_YAML)
 
-
   if (verbose) {
     return {
       logSteps,
@@ -1512,7 +1861,10 @@ async function validateYAMLandXMLandXSD(in_YAML, in_XML, in_XSD, verbose = false
   }
 
   // Return the logs
-  return logSteps
+  return {
+    success: true,
+    logSteps,
+  } // Return only logSteps in non-verbose mode
 }
 
 async function validateYAMLAndJSONAndXMLAndXSD(in_YAML, in_JSON, in_XML, in_XSD, verbose = false) {
@@ -1524,7 +1876,8 @@ async function validateYAMLAndJSONAndXMLAndXSD(in_YAML, in_JSON, in_XML, in_XSD,
   } catch (error) {
     logSteps.push("Error normalizing YAML: " + error.message)
   }
-  const isValidYAML = await validateYAML(in_YAML, logSteps)
+  let result = await validateYAML(in_YAML, logSteps)
+  const isValidYAML = result.success
   if (isValidYAML) {
     logSteps.push("YAML is valid")
   } else {
@@ -1532,23 +1885,25 @@ async function validateYAMLAndJSONAndXMLAndXSD(in_YAML, in_JSON, in_XML, in_XSD,
   }
 
   // Step 2: Validate JSON
-  const isValidJSON = await validateJSON(in_JSON, logSteps)
-  if (isValidJSON) {
+  result = await validateJSON(in_JSON, logSteps)
+  const isJSONValid = result.success
+  if (isJSONValid) {
     logSteps.push("JSON is valid")
   } else {
     logSteps.push("JSON is invalid")
   }
 
-    try {
-      in_JSON = JSON.parse(in_JSON)
-      logSteps.push("Success: in_JSON successfully parsed into an object")
-    } catch (parseError) {
-      logSteps.push("Error: Failed to parse in_JSON into an object")
-      return logSteps // Exit early if JSON is invalid
-    }
+  try {
+    in_JSON = JSON.parse(in_JSON)
+    logSteps.push("Success: in_JSON successfully parsed into an object")
+  } catch (parseError) {
+    logSteps.push("Error: Failed to parse in_JSON into an object")
+    return logSteps // Exit early if JSON is invalid
+  }
 
   // Step 3: Validate XML
-  const isValidXML = await validateXML(in_XML, logSteps)
+  result = await validateXML(in_XML, logSteps)
+  const isValidXML = result.success
   if (isValidXML) {
     logSteps.push("XML is valid")
   } else {
@@ -1577,7 +1932,7 @@ async function validateYAMLAndJSONAndXMLAndXSD(in_YAML, in_JSON, in_XML, in_XSD,
   }
 
   try {
-    if (isValidJSON) {
+    if (isJSONValid) {
       convertedJSONtoXML = JSONtoXML(in_JSON)
       logSteps.push("Successfully converted JSON to XML")
     }
@@ -1586,8 +1941,8 @@ async function validateYAMLAndJSONAndXMLAndXSD(in_YAML, in_JSON, in_XML, in_XSD,
   }
 
   // Step 6: Compare XMLs
-   in_XML = normalizeXML(in_XML)
-  if (isValidYAML && isValidJSON && isValidXML && isCompliantXML) {
+  in_XML = normalizeXML(in_XML)
+  if (isValidYAML && isJSONValid && isValidXML && isCompliantXML) {
     if (
       convertedYAMLtoXML === convertedJSONtoXML &&
       convertedJSONtoXML === in_XML
@@ -1620,7 +1975,10 @@ async function validateYAMLAndJSONAndXMLAndXSD(in_YAML, in_JSON, in_XML, in_XSD,
   }
 
   // Step 7: Return the logs
-  return logSteps
+  return {
+    success: true,
+    logSteps,
+  } // Return only logSteps in non-verbose mode
 }
 
 async function validateAll(
@@ -1639,11 +1997,13 @@ async function validateAll(
   } catch (error) {
     logSteps.push("Error normalizing YAML: " + error.message)
   }
-  const isValidYAML = await validateYAML(in_YAML, logSteps)
+  let result = await validateYAML(in_YAML, logSteps)
+  const isValidYAML = result.success
   logSteps.push(isValidYAML ? "YAML is valid" : "YAML is invalid")
 
   // Step 2: Validate JSON
-  const isValidJSON = await validateJSON(in_JSON, logSteps)
+  result = await validateJSON(in_JSON, logSteps)
+  const isValidJSON = result
   logSteps.push(isValidJSON ? "JSON is valid" : "JSON is invalid")
 
   try {
@@ -1655,7 +2015,8 @@ async function validateAll(
   }
 
   // Step 3: Validate XML
-  const isValidXML = await validateXML(in_XML, logSteps)
+  result = await validateXML(in_XML, logSteps)
+  const isValidXML = result.success
   logSteps.push(isValidXML ? "XML is valid" : "XML is invalid")
 
   // Step 4: Validate XML against XSD
@@ -1726,7 +2087,10 @@ async function validateAll(
     }
   }
   // Return logs
-  return logSteps
+  return {
+    success: true,
+    logSteps,
+  } // Return only logSteps in non-verbose mode
 }
 
 async function validateWithOutXSD(
@@ -1746,11 +2110,13 @@ async function validateWithOutXSD(
   } catch (error) {
     logSteps.push("Error normalizing YAML: " + error.message)
   }
-  const isValidYAML = await validateYAML(in_YAML, logSteps)
+  let result = await validateYAML(in_YAML, logSteps)
+  let isValidYAML = result.success
   logSteps.push(isValidYAML ? "YAML is valid" : "YAML is invalid")
 
   // Step 2: Validate JSON
-  const isValidJSON = await validateJSON(in_JSON, logSteps)
+  result = await validateJSON(in_JSON, logSteps)
+  let isValidJSON = result.success
   logSteps.push(isValidJSON ? "JSON is valid" : "JSON is invalid")
 
   try {
@@ -1762,7 +2128,8 @@ async function validateWithOutXSD(
   }
 
   // Step 3: Validate XML
-  const isValidXML = await validateXML(in_XML, logSteps)
+  result = await validateXML(in_XML, logSteps)
+  let isValidXML = result.success
   logSteps.push(isValidXML ? "XML is valid" : "XML is invalid")
 
   // Step 4: Validate XML against input XSD
@@ -1840,7 +2207,11 @@ async function validateWithOutXSD(
   // Step 9: Validate the transformed result against output XSD
   try {
     if (xsltResult) {
-      const isCompliantWithOutputXSD = await validateXSD(xsltResult, out_XSD, logSteps)
+      const isCompliantWithOutputXSD = await validateXSD(
+        xsltResult,
+        out_XSD,
+        logSteps
+      )
       logSteps.push(
         isCompliantWithOutputXSD
           ? "Transformed result is compliant with output XSD"
@@ -1863,7 +2234,10 @@ async function validateWithOutXSD(
   }
 
   // Return logs
-  return logSteps
+  return {
+    success: true,
+    logSteps,
+  } // Return only logSteps in non-verbose mode
 }
 
 function normalizeYAML(inputData) {
@@ -1919,21 +2293,21 @@ function normalizeXML(xmlString) {
 //     "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/recr1RGoaSKRxUbd0/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
 //   in_JSON:
 //     "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/rec786n3UYEyRNhiu/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
-//   // in_XML:
-//   //   "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/rec4u5NWYb3S69Ilh/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
-//   // in_XSD:
-//   //   "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/recgdWklBCmuVmxIE/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
-//   // in_XSLT:
-//   //   "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/recE38NCv8jviIMn6/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
-//   // out_XSD:
-//   //   "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/reczwx2Pc6MQqHJcL/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
-//   verbose: true
+//   in_XML:
+//     "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/rec4u5NWYb3S69Ilh/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
+//   in_XSD:
+//     "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/recgdWklBCmuVmxIE/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
+//   in_XSLT:
+//     "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/recE38NCv8jviIMn6/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
+//   out_XSD:
+//     "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/reczwx2Pc6MQqHJcL/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
+//   verbose: false
 // }
-// exports
-//   .handler(body)
-//   .then((response) => {
-//     console.log("Test Result:", JSON.parse(response.body));
-//   });
+exports
+  .handler(body)
+  .then((response) => {
+    console.log("Test Result:", JSON.parse(response.body));
+  });
 
   function cleanJsonString(input) {
     // Remove escape slashes from the string
