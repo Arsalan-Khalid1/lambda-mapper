@@ -483,7 +483,7 @@ exports.handler = async (event) => {
       !inputKeys.includes("in_YAML") &&
       !inputKeys.includes("in_JSON")
     ) {
-      const result = await validateXSLT(inputData["in_XML"], logSteps, verbose)
+      const result = await validateXSLT(inputData["in_XSLT"], logSteps, verbose)
       logSteps.push(...result.logSteps)
 
       if (result.out_YAML) {
@@ -917,6 +917,174 @@ exports.handler = async (event) => {
       }
     }
 
+    if (inputKeys.include("in_YAML") &&
+        inputKeys.include("plus_YAML") &&
+        inputKeys.include("aggregate_XSLT") &&
+        inputKeys.include("out_XML")
+    ) {
+        const result = await validateCase13(
+          inputData["plus_YAML"],
+          inputData["aggregate_XSLT"],
+          inputData["in_YAML"],
+          inputData["out_XML"]
+        )
+      }
+
+      if (inputKeys.include("plus_YAML") && inputKeys.include("aggregate_XSLT") &&  inputKeys.include("in_YAML"), verbose){
+
+        const result = await handleCasePlusYAMLAggregateXSLTInYAML(
+          inputData["plus_YAML"],
+          inputData["aggregate_XSLT"],
+          inputData["in_YAML"],
+          verbose
+        )
+        logSteps.push(...result.logSteps)
+        if (result.plus_JSON) {
+          plus_JSON = await uploadToAirtable(plus_JSON)
+          logSteps.push(`plus_JSON uploaded to Airtable: ${plus_JSON}`)
+        }
+
+        if (result.plus_XML) {
+          plus_XML = await uploadToAirtable(plus_XML)
+          logSteps.push(`plus_XML uploaded to Airtable: ${plus_XML}`)
+        }
+
+        // if (plus_XSD) {
+        //   plus_XSD = await uploadToAirtable(plus_XSD);
+        //   logSteps.push(`plus_XSD uploaded to Airtable: ${plus_XSD}`);
+        // }
+
+        if (result.in_JSON) {
+          in_JSON = await uploadToAirtable(in_JSON)
+          logSteps.push(`in_JSON uploaded to Airtable: ${in_JSON}`)
+        }
+
+        if (in_XML) {
+          in_XML = await uploadToAirtable(in_XML)
+          logSteps.push(`in_XML uploaded to Airtable: ${in_XML}`)
+        }
+
+        // if (in_XSD) {
+        //   in_XSD = await uploadToAirtable(in_XSD);
+        //   logSteps.push(`in_XSD uploaded to Airtable: ${in_XSD}`);
+        // }
+
+        if (result.aggregate_XML) {
+          aggregate_XML = await uploadToAirtable(aggregate_XML)
+          logSteps.push(`aggregate_XML uploaded to Airtable: ${aggregate_XML}`)
+        }
+
+        // if (aggregate_XSD) {
+        //   aggregate_XSD = await uploadToAirtable(aggregate_XSD);
+        //   logSteps.push(`aggregate_XSD uploaded to Airtable: ${aggregate_XSD}`);
+        // }
+
+        // if (XSLT) {
+        //   XSLT = await uploadToAirtable(XSLT);
+        //   logSteps.push(`XSLT uploaded to Airtable: ${XSLT}`);
+        // }
+
+        if (result.out_YAML) {
+          out_YAML = await uploadToAirtable(out_YAML)
+          logSteps.push(`out_YAML uploaded to Airtable: ${out_YAML}`)
+        }
+
+        if (result.out_JSON) {
+          out_JSON = await uploadToAirtable(out_JSON)
+          logSteps.push(`out_JSON uploaded to Airtable: ${out_JSON}`)
+        }
+
+        if (result.out_XML) {
+          out_XML = await uploadToAirtable(out_XML)
+          logSteps.push(`out_XML uploaded to Airtable: ${out_XML}`)
+        }
+
+        // if (out_XSD) {
+        //   out_XSD = await uploadToAirtable(out_XSD);
+        //   logSteps.push(`out_XSD uploaded to Airtable: ${out_XSD}`);
+        // }
+      }
+
+
+      if (
+        (inputKeys.include("plus_YAML") &&
+          inputKeys.include("aggregate_XSLT") &&
+          inputKeys.include("in_JSON"),
+        verbose)
+      ) {
+        const result = await handleCasePlusYAMLAggregateXSLTInJSON(
+          inputData["plus_YAML"],
+          inputData["aggregate_XSLT"],
+          inputData["in_JSON"],
+          verbose
+        )
+        logSteps.push(...result.logSteps)
+        if (plus_JSON) {
+          plus_JSON = await uploadToAirtable(plus_JSON)
+          logSteps.push(`plus_JSON uploaded to Airtable: ${plus_JSON}`)
+        }
+
+        if (plus_XML) {
+          plus_XML = await uploadToAirtable(plus_XML)
+          logSteps.push(`plus_XML uploaded to Airtable: ${plus_XML}`)
+        }
+
+        // if (plus_XSD) {
+        //   plus_XSD = await uploadToAirtable(plus_XSD);
+        //   logSteps.push(`plus_XSD uploaded to Airtable: ${plus_XSD}`);
+        // }
+
+        if (in_YAML) {
+          in_YAML = await uploadToAirtable(in_YAML)
+          logSteps.push(`in_JSON uploaded to Airtable: ${in_YAML}`)
+        }
+
+        if (in_XML) {
+          in_XML = await uploadToAirtable(in_XML)
+          logSteps.push(`in_XML uploaded to Airtable: ${in_XML}`)
+        }
+
+        // if (in_XSD) {
+        //   in_XSD = await uploadToAirtable(in_XSD);
+        //   logSteps.push(`in_XSD uploaded to Airtable: ${in_XSD}`);
+        // }
+
+        if (aggregate_XML) {
+          aggregate_XML = await uploadToAirtable(aggregate_XML)
+          logSteps.push(`aggregate_XML uploaded to Airtable: ${aggregate_XML}`)
+        }
+
+        // if (aggregate_XSD) {
+        //   aggregate_XSD = await uploadToAirtable(aggregate_XSD);
+        //   logSteps.push(`aggregate_XSD uploaded to Airtable: ${aggregate_XSD}`);
+        // }
+
+        // if (XSLT) {
+        //   XSLT = await uploadToAirtable(XSLT);
+        //   logSteps.push(`XSLT uploaded to Airtable: ${XSLT}`);
+        // }
+
+        if (out_YAML) {
+          out_YAML = await uploadToAirtable(out_YAML)
+          logSteps.push(`out_YAML uploaded to Airtable: ${out_YAML}`)
+        }
+
+        if (out_JSON) {
+          out_JSON = await uploadToAirtable(out_JSON)
+          logSteps.push(`out_JSON uploaded to Airtable: ${out_JSON}`)
+        }
+
+        if (out_XML) {
+          out_XML = await uploadToAirtable(out_XML)
+          logSteps.push(`out_XML uploaded to Airtable: ${out_XML}`)
+        }
+
+        // if (out_XSD) {
+        //   out_XSD = await uploadToAirtable(out_XSD);
+        //   logSteps.push(`out_XSD uploaded to Airtable: ${out_XSD}`);
+        // }
+      }
+
     const output = await uploadToCloudEvent(logSteps)
     return {
       statusCode: 200,
@@ -1260,6 +1428,33 @@ function YAMLtoJSON(yamlString) {
     throw new Error("Invalid YAML format") // Handle any parsing errors
   }
 }
+
+
+async function XMLtoYAML(xmlString) {
+  try {
+    const jsonObject = await XMLtoJSON(xmlString) // First convert XML to JSON
+    const yamlString = yaml.dump(jsonObject, { noRefs: true })
+    console.log("Successfully converted XML to YAML.")
+    return yamlString
+  } catch (error) {
+    console.error("Error during XML to YAML conversion:", error.message)
+    throw new Error("Error in XML to YAML conversion: " + error.message)
+  }
+}
+
+
+async function XMLtoJSON(xmlString) {
+  try {
+    const parser = new xml2js.Parser({ explicitArray: false })
+    const jsonObject = await parser.parseStringPromise(xmlString)
+    console.log("Successfully converted XML to JSON.")
+    return jsonObject
+  } catch (error) {
+    console.error("Error during XML to JSON conversion:", error.message)
+    throw new Error("Error in XML to JSON conversion: " + error.message)
+  }
+}
+
 
 
 
@@ -2083,7 +2278,7 @@ async function validateAll(
       logSteps,
       out_YAML: in_YAML, // Final YAML input
       out_JSON: in_JSON, // Final JSON input
-      out_XML: in_XML, // Final XML input
+      out_XML: xsltResult, // Final XML input
     }
   }
   // Return logs
@@ -2229,7 +2424,7 @@ async function validateWithOutXSD(
       logSteps,
       out_YAML: in_YAML, // Final YAML input
       out_JSON: in_JSON, // Final JSON input
-      out_XML: in_XML, // Final XML input
+      out_XML: xsltResult, // Final XML input
     }
   }
 
@@ -2272,8 +2467,1403 @@ function normalizeXML(xmlString) {
   }
 }
 
+function combineYAMLs(yaml1, yaml2, logSteps) {
+  try {
+    // Parse the YAML strings into JavaScript objects
+    const obj1 = yaml.load(yaml1)
+    const obj2 = yaml.load(yaml2)
+
+    // Combine the objects (obj2 overwrites obj1 in case of conflicts)
+    const mergedObject = { ...obj1, ...obj2 }
+
+    // Convert the merged object back to a YAML string
+    const mergedYAML = yaml.dump(mergedObject)
+
+    return mergedYAML
+  } catch (error) {
+    throw new Error(`Error combining YAMLs: ${error.message}`)
+  }
+}
+
+function combineXMLStrings(yamlXML, jsonXML, rootElement = "combined") {
+  return `<${rootElement}>
+    <fromYAML><![CDATA[${yamlXML}]]></fromYAML>
+    <fromJSON><![CDATA[${jsonXML}]]></fromJSON>
+  </${rootElement}>`
+}
 
 
+function combineYAMLAndJSONtoXML(yamlString, jsonString, logSteps) {
+  try {
+    // Convert YAML to XML
+    const yamlXML = YAMLtoXML(yamlString);
+    logSteps.push("Successfully converted YAML to XML.");
+
+    // Convert JSON to XML
+    const jsonXML = JSONtoXML(JSON.parse(jsonString));
+    logSteps.push("Successfully converted JSON to XML.");
+    // Combine the two XML outputs
+    const combinedXML = combineXMLStrings(yamlXML, jsonXML);
+    logSteps.push("Successfully combined YAML and JSON XML outputs.");
+
+    return combinedXML;
+  } catch (e) {
+    logSteps.push(`Error combining YAML and JSON into XML: ${e.message}`);
+    return null;
+  }
+}
+
+async function validateCase13(plus_YAML, aggregate_XSLT, in_YAML, out_XML  ) {
+  const logSteps = []
+
+  try {
+    in_YAML = normalizeYAML(in_YAML) // Normalize the YAML input to ensure proper formatting
+  } catch (error) {
+    logSteps.push("Error normalizing YAML: " + error.message)
+  }
+  let result = await validateYAML(in_YAML, logSteps)
+  let isValidYAML = result.success
+  logSteps.push(isValidYAML ? "YAML is valid" : "YAML is invalid")
+
+  try {
+    plus_YAML = normalizeYAML(plus_YAML) // Normalize the YAML input to ensure proper formatting
+  } catch (error) {
+    logSteps.push("Error normalizing YAML: " + error.message)
+  }
+   result = await validateYAML(plus_YAML, logSteps)
+   isValidYAML = result.success
+  logSteps.push(isValidYAML ? "YAML plus is valid" : "YAML plus is invalid")
+
+  try {
+    let isCombined = combineYAMLs(in_YAML, plus_YAML)
+    logSteps.push(isCombined ? "YAMLs combined successfully" : "YAMLs failed to combine" )
+  } catch(error){
+    logSteps.push("Error combining YAML: " + error.message)
+  }
+
+  const mergedXML = YAMLtoXML(JSON.stringify(isCombined))
+  logSteps.push("Converted merged YAML to intermediate XML.")
+
+  result = validateXSLT(aggregate_XSLT, logSteps)
+  isValidXSLT = result.success
+  logSteps.push(
+    isValidXSLT
+      ? "Aggregate_XSLT is valid."
+      : "Error: Aggregate_XSLT is invalid."
+  )
+
+  result = await validateXML(out_XML, logSteps)
+  let isValidXML = result.success
+  logSteps.push(isValidXML ? "out_XML is valid" : "out_XML is invalid")
+
+  const aggregateXML = transformXMLUsingXSLT(mergedXML, aggregate_XSLT)
+  logSteps.push("Applied Aggregate_XSLT to generate Aggregate_XML.")
+
+  result = validateXML(aggregateXML, logSteps)
+  const isValidAggregateXML = result.success
+  logSteps.push(
+    isValidAggregateXML
+      ? "Aggregate_XML is valid."
+      : "Error: Aggregate_XML is invalid."
+  )
+    return {
+      logSteps,
+      aggregate_XML: aggregateXML
+    }
+}
+
+async function case14Handler(plus_YAML, aggregate_XSLT, in_JSON, out_XML, logSteps) {
+  // Validate plus_YAML
+  try {
+    in_YAML = normalizeYAML(in_YAML) // Normalize the YAML input to ensure proper formatting
+  } catch (error) {
+    logSteps.push("Error normalizing YAML: " + error.message)
+  }
+  let result = await validateYAML(in_YAML, logSteps)
+  let isValidYAML = result.success
+  logSteps.push(isValidYAML ? "YAML is valid" : "YAML is invalid")
+
+  // Validate in_JSON
+  result = await validateJSON(in_JSON, logSteps)
+  let isValidJSON = result.success
+  logSteps.push(isValidJSON ? "JSON is valid" : "JSON is invalid")
+
+  try {
+    in_JSON = JSON.parse(in_JSON)
+    logSteps.push("Success: in_JSON successfully parsed into an object")
+  } catch (parseError) {
+    logSteps.push("Error: Failed to parse in_JSON into an object")
+    return logSteps // Exit early if JSON is invalid
+  }
+
+  // Validate aggregate_XSLT (as XML)
+  result = validateXSLT(aggregate_XSLT, logSteps)
+  isValidXSLT = result.success
+  logSteps.push(
+    isValidXSLT
+      ? "Aggregate_XSLT is valid."
+      : "Error: Aggregate_XSLT is invalid."
+  )
+
+  result = validateXML(out_XML, logSteps)
+  const isOutXMLValid = result.success
+  logSteps.push(
+    isOutXMLValid ? "out_XML is valid." : "Error: out_XML is invalid."
+  )
+
+  if (!isValidYAML || !isValidJSON || !isValidXSLT) {
+    logSteps.push("Validation failed for one or more inputs.")
+    return { logSteps, aggregate_XML: null }
+  }
+
+  // Combine YAML and JSON into intermediate XML
+  const intermediateXML = combineYAMLAndJSONtoXML(plus_YAML, in_JSON, logSteps)
+
+  if (!intermediateXML) {
+    logSteps.push("Failed to create intermediate XML from YAML and JSON.")
+    return { logSteps, aggregate_XML: null }
+  }
+
+  // Validate and transform the intermediate XML using aggregate_XSLT
+  const aggregate_XML = validateXMLAgainstXSLT(
+    intermediateXML,
+    aggregate_XSLT,
+    logSteps
+  )
+
+  if (!aggregate_XML) {
+    logSteps.push("Failed to transform intermediate XML using aggregate_XSLT.")
+    return { logSteps, aggregate_XML: null }
+  }
+
+  // Return the aggregate XML
+  return {
+    logSteps,
+    aggregate_XML: aggregate_XML
+  }
+}
+
+async function handleCase15(plus_YAML, aggregate_XSLT, in_XML, out_XML, logSteps) {
+  let aggregate_XML
+
+  try {
+    try {
+      plus_YAML = normalizeYAML(plus_YAML) // Normalize the YAML input to ensure proper formatting
+    } catch (error) {
+      logSteps.push("Error normalizing YAML: " + error.message)
+    }
+    logSteps.push("Validating plus_YAML...")
+    let result = await validateYAML(in_YAML, logSteps)
+    let isValidYAML = result.success
+    logSteps.push(isValidYAML ? "YAML is valid" : "YAML is invalid")
+
+    logSteps.push("Validating in_XML...")
+    result = await validateXML(in_XML, logSteps)
+    const isXMLValid = result.success
+    logSteps.push(
+      `in_XML validation result: ${
+        isXMLValid ? "Success: XML is valid" : "Error: XML is invalid"
+      }`
+    )
+
+    logSteps.push("Validating aggregate_XSLT...")
+    const isXSLTValid = await validateXSLT(aggregate_XSLT, logSteps)
+    logSteps.push(
+      `aggregate_XSLT validation result: ${
+        isXSLTValid ? "Success: XSLT is valid" : "Error: XSLT is invalid"
+      }`
+    )
+
+    result = validateXML(out_XML, logSteps)
+    const isOutXMLValid = result.success
+    logSteps.push(
+      isOutXMLValid ? "out_XML is valid." : "Error: out_XML is invalid."
+    )
+
+    if (!isYAMLValid || !isXMLValid || !isXSLTValid) {
+      logSteps.push("Validation failed: One or more inputs are invalid.")
+      throw new Error("Validation failed for inputs.")
+    }
+
+    // Step 2: Transform Inputs
+    logSteps.push("Converting plus_YAML to XML...")
+    const plus_XML = YAMLtoXML(plus_YAML)
+    logSteps.push("Successfully converted plus_YAML to XML.")
+
+    logSteps.push("Combining transformed XMLs into aggregate_XML...")
+    aggregate_XML = combineXMLStrings(plus_XML, in_XML, "aggregate")
+    logSteps.push("Successfully combined transformed XMLs into aggregate_XML.")
+
+    logSteps.push("Applying aggregate_XSLT transformation to in_XML...")
+      aggregate_XML = await transformXMLUsingXSLT(
+      aggregate_XML,
+      aggregate_XSLT
+    )
+    logSteps.push("Successfully applied aggregate_XSLT to in_XML.")
+
+    // Step 4: Return Output
+    return {
+      logSteps,
+      aggregate_XML: aggregate_XML,
+    }
+  } catch (error) {
+    logSteps.push(`Error in processing case 15: ${error.message}`)
+    return {
+      logSteps,
+      out_XML: null,
+    }
+  }
+}
+
+async function validateFiles(
+  plus_YAML,
+  aggregate_XSLT,
+  in_XML,
+  in_XSD,
+  out_XML,
+  logSteps
+) {
+  try {
+    let aggregate_XML
+    plus_YAML = normalizeYAML(plus_YAML) // Normalize the YAML input to ensure proper formatting
+    let result = await validateYAML(plus_YAML, logSteps)
+    let isValidYAML = result.success
+    logSteps.push(isValidYAML ? "YAML is valid" : "YAML is invalid")
+
+    logSteps.push("Validating in_XML...")
+    result = await validateXML(in_XML, logSteps)
+    const isXMLValid = result.success
+    logSteps.push(
+      `in_XML validation result: ${
+        isXMLValid ? "Success: XML is valid" : "Error: XML is invalid"
+      }`
+    )
+
+    logSteps.push("Validating aggregate_XSLT...")
+    const isXSLTValid = await validateXSLT(aggregate_XSLT, logSteps)
+    logSteps.push(
+      `aggregate_XSLT validation result: ${
+        isXSLTValid ? "Success: XSLT is valid" : "Error: XSLT is invalid"
+      }`
+    )
+
+    const isCompliantWithInputXSD = await validateXSD(in_XML, in_XSD, logSteps)
+    logSteps.push(
+      isCompliantWithInputXSD
+        ? "XML is compliant with input XSD"
+        : "XML is not compliant with input XSD"
+    )
+
+    result = validateXML(out_XML, logSteps)
+    const isOutXMLValid = result.success
+    logSteps.push(
+      isOutXMLValid ? "out_XML is valid." : "Error: out_XML is invalid."
+    )
+
+    logSteps.push("Converting plus_YAML to XML...")
+    const plus_XML = YAMLtoXML(plus_YAML)
+    logSteps.push("Successfully converted plus_YAML to XML.")
+
+    logSteps.push("Combining transformed XMLs into aggregate_XML...")
+    aggregate_XML = combineXMLStrings(plus_XML, in_XML, "aggregate")
+    logSteps.push("Successfully combined transformed XMLs into aggregate_XML.")
+
+    logSteps.push("Applying aggregate_XSLT transformation to in_XML...")
+    const transformed_XML = await transformXMLUsingXSLT(
+      aggregate_XML,
+      aggregate_XSLT
+    )
+    logSteps.push("Successfully applied aggregate_XSLT to in_XML.")
+
+    return {
+      success: true,
+      logSteps,
+      aggregate_XML: transformed_XML, // Assuming you want to create an aggregated XML from in_XML and out_XML
+    }
+  } catch (e) {
+    logSteps.push(`Validation failed: ${e.message}`)
+    return {
+      success: false,
+      logSteps,
+    }
+  }
+}
+
+async function validate17(plus_YAML, plus_XSD, aggregate_XSLT, in_XML, in_XSD, out_XML) {
+  try {
+    plus_YAML = normalizeYAML(plus_YAML) // Normalize the YAML input to ensure proper formatting
+    let result = await validateYAML(plus_YAML, logSteps)
+    let isValidYAML = result.success
+    logSteps.push(isValidYAML ? "YAML is valid" : "YAML is invalid")
+
+    logSteps.push("Validating in_XML...")
+    result = await validateXML(in_XML, logSteps)
+    const isXMLValid = result.success
+    logSteps.push(
+      `in_XML validation result: ${
+        isXMLValid ? "Success: XML is valid" : "Error: XML is invalid"
+      }`
+    )
+
+    logSteps.push("Converting plus_YAML to XML...")
+    const plus_XML = YAMLtoXML(plus_YAML)
+    logSteps.push("Successfully converted plus_YAML to XML.")
+
+    logSteps.push("Validating aggregate_XSLT...")
+    const isXSLTValid = await validateXSLT(aggregate_XSLT, logSteps)
+    logSteps.push(
+      `aggregate_XSLT validation result: ${
+        isXSLTValid ? "Success: XSLT is valid" : "Error: XSLT is invalid"
+      }`
+    )
+
+    const isCompliantWithInputXSD = await validateXSD(in_XML, in_XSD, logSteps)
+    logSteps.push(
+      isCompliantWithInputXSD
+        ? "XML is compliant with input XSD"
+        : "XML is not compliant with input XSD"
+    )
+
+    const isCompliantWithPlusXSD = await validateXSD(
+      plus_XML,
+      plus_XSD,
+      logSteps
+    )
+    logSteps.push(
+      isCompliantWithPlusXSD
+        ? "plus_XML is compliant with plus XSD"
+        : "plus_XML is not compliant with plus XSD"
+    )
+
+    logSteps.push("Combining transformed XMLs into aggregate_XML...")
+    let aggregate_XML = combineXMLStrings(plus_XML, in_XML, "aggregate")
+    logSteps.push("Successfully combined transformed XMLs into aggregate_XML.")
+
+    logSteps.push("Applying aggregate_XSLT transformation to in_XML...")
+    const transformed_XML = await transformXMLUsingXSLT(
+      aggregate_XML,
+      aggregate_XSLT
+    )
+    logSteps.push("Successfully applied aggregate_XSLT to in_XML.")
+
+    return {
+      success: true,
+      logSteps,
+      aggregate_XML: transformed_XML, // Assuming you want to create an aggregated XML from in_XML and out_XML
+    }
+  } catch (e) {
+    logSteps.push(`Validation failed: ${e.message}`)
+    return {
+      success: false,
+      logSteps,
+    }
+  }
+}
+
+async function handleCasePlusYAMLAggregateXSLTInYAML(
+  plus_YAML,
+  aggregate_XSLT,
+  in_YAML,
+  logSteps
+) {
+
+  try {
+    logSteps.push("Starting validation and processing for case.")
+
+    // Step 1: Validate plus_YAML
+    plus_YAML = normalizeYAML(plus_YAML) // Normalize the YAML input to ensure proper formatting
+    let result = await validateYAML(plus_YAML, logSteps)
+    let isValidYAML = result.success
+    logSteps.push(isValidYAML ? "plus_YAML is valid" : "plus_YAML is invalid")
+
+    // Step 2: Validate in_YAML
+    plus_YAML = normalizeYAML(in_YAML) // Normalize the YAML input to ensure proper formatting
+    result = await validateYAML(in_YAML, logSteps)
+    isValidYAML = result.success
+    logSteps.push(isValidYAML ? "YAML is valid" : "YAML is invalid")
+
+    // Step 3: Generate XML from plus_YAML
+    let plus_XML = YAMLtoXML(plus_YAML)
+    logSteps.push("Generated plus_XML from plus_YAML.")
+
+    // Step 4: Convert in_YAML to XML
+    let in_XML = YAMLtoXML(in_YAML)
+    logSteps.push("Generated in_XML from in_YAML.")
+
+    logSteps.push("Combining transformed XMLs into aggregate_XML...")
+    combinedXML = combineXMLStrings(in_XML, plus_XML, "aggregate")
+    logSteps.push("Successfully combined transformed XMLs into aggregate_XML.")
+
+    // Step 5: Combine XMLs using aggregate_XSLT
+    const aggregate_XML = await transformXMLUsingXSLT(
+      combinedXML,
+      aggregate_XSLT
+    )
+    logSteps.push(
+      "Transformed XML using aggregate_XSLT to produce aggregate_XML."
+    )
+
+    // Step 6: Validate XMLs (compliance check)
+    const isPlusXMLCompliant = await validateXML(plus_XML, logSteps)
+    logSteps.push(
+      isPlusXMLCompliant
+        ? "plus_XML is valid and compliant."
+        : "plus_XML is not valid or compliant."
+    )
+
+    const isInXMLCompliant = await validateXML(in_XML, logSteps)
+    logSteps.push(
+      isInXMLCompliant
+        ? "in_XML is valid and compliant."
+        : "in_XML is not valid or compliant."
+    )
+
+    const isAggregateXMLCompliant = await validateXML(aggregate_XML, logSteps)
+    logSteps.push(
+      isAggregateXMLCompliant
+        ? "aggregate_XML is valid and compliant."
+        : "aggregate_XML is not valid or compliant."
+    )
+
+    // Step 7: Output aggregate_XML
+    out_XML = aggregate_XML
+    logSteps.push("aggregate_XML is set as out_XML.")
+
+    // Step 8: Convert out_XML to YAML (out_YAML)
+    out_YAML = await XMLtoYAML(out_XML)
+    logSteps.push("Converted out_XML to out_YAML.")
+
+    // Step 9: Convert out_XML to JSON (out_JSON)
+    out_JSON = await XMLtoJSON(out_XML)
+    logSteps.push("Converted out_XML to out_JSON.")
+
+    plus_JSON = YAMLtoJSON(plus_YAML)
+    logSteps.push("Converted plus_YAML to plus_JSON.")
+
+    in_JSON = YAMLtoJSON(in_YAML)
+    logSteps.push("Converted in_YAML to in_JSON")
+
+
+    // Step 10: Generate XSDs (Commented out as requested)
+    /*
+    out_XSD = generateXSD(out_XML, logSteps);
+    logSteps.push("Generated out_XSD from out_XML.");
+    */
+
+    // Logging verbose outputs
+    // if (verbose) {
+    //   logSteps.push(`plus_XML: ${plus_XML}`)
+    //   logSteps.push(`in_XML: ${in_XML}`)
+    //   logSteps.push(`aggregate_XML: ${aggregate_XML}`)
+    //   logSteps.push(`out_YAML: ${out_YAML}`)
+    //   logSteps.push(`out_JSON: ${JSON.stringify(out_JSON, null, 2)}`)
+    //   // logSteps.push(`out_XSD: ${out_XSD}`);
+    // }
+
+    logSteps.push("Processing for case completed successfully.")
+    return {
+      plus_JSON: plus_JSON,
+      plus_XML: plus_XML,
+      // plus_XSD: plus_XSD,
+      in_JSON: in_JSON,
+      in_XML: in_XML,
+      // in_XSD: in_XSD,
+      aggregate_XML: aggregate_XML,
+      // aggregate_XSD: aggregate_XSD,
+      // XSLT: XSLT,
+      out_YAML: out_YAML,
+      out_JSON: out_JSON,
+      out_XML: out_XML,
+      // out_XSD: out_XSD,
+      logSteps
+    }
+  } catch (error) {
+    logSteps.push(`Error occurred: ${error.message}`)
+    throw error
+  }
+}
+
+async function handleCasePlusYAMLAggregateXSLTInJSON(
+  plus_YAML,
+  aggregate_XSLT,
+  in_JSON,
+  logSteps
+) {
+
+  let plus_JSON, plus_XML, plus_XSD, in_YAML, in_XML, in_XSD
+  let aggregate_XML, aggregate_XSD, out_YAML, out_JSON, out_XML, out_XSD
+  const verbose = true // Verbose is set to true
+
+  try {
+    logSteps.push("Starting validation and processing for case.")
+
+    // Step 1: Validate plus_YAML
+    plus_YAML = normalizeYAML(plus_YAML) // Normalize the YAML input to ensure proper formatting
+    let result = await validateYAML(plus_YAML, logSteps)
+    let isValidYAML = result.success
+    logSteps.push(isValidYAML ? "plus_YAML is valid" : "plus_YAML is invalid")
+
+    // Step 2: Validate in_JSON
+    result = await validateJSON(in_JSON, logSteps)
+    let isValidJSON = result.success
+    logSteps.push(isValidJSON ? "JSON is valid" : "JSON is invalid")
+
+    try {
+      in_JSON = JSON.parse(in_JSON)
+      logSteps.push("Success: in_JSON successfully parsed into an object")
+    } catch (parseError) {
+      logSteps.push("Error: Failed to parse in_JSON into an object")
+      return logSteps // Exit early if JSON is invalid
+    }
+
+    // Step 3: Generate plus_JSON and Validate
+    plus_JSON = YAMLtoJSON(plus_YAML)
+    logSteps.push("Converted plus_YAML to plus_JSON.")
+    result = await validateJSON(plus_JSON, logSteps, verbose)
+    const isValidPlusJSON = result.success
+    logSteps.push(
+      isValidPlusJSON
+        ? "plus_JSON validation succeeded."
+        : "plus_JSON validation failed."
+    )
+
+    // Step 4: Convert plus_YAML to XML
+    plus_XML = YAMLtoXML(plus_YAML)
+    logSteps.push("Converted plus_YAML to plus_XML.")
+
+    // Step 5: Convert in_JSON to YAML and XML
+    in_YAML = JSONtoYAML(in_JSON)
+    logSteps.push("Converted in_JSON to in_YAML.")
+    in_XML = JSONtoXML(in_JSON)
+    logSteps.push("Converted in_JSON to in_XML.")
+
+    combinedXML = combineXMLStrings(in_XML, plus_XML, "aggregate")
+    logSteps.push("Successfully combined transformed XMLs into aggregate_XML.")
+
+
+    // Step 6: Combine XMLs using aggregate_XSLT
+    aggregate_XML = await transformXMLUsingXSLT(combinedXML, aggregate_XSLT)
+    logSteps.push(
+      "Transformed XML using aggregate_XSLT to produce aggregate_XML."
+    )
+
+    // Step 7: Compliance Checks for XMLs
+    result = await validateXML(plus_XML, logSteps)
+    const isPlusXMLCompliant = result.success
+    logSteps.push(
+      isPlusXMLCompliant
+        ? "plus_XML is valid and compliant."
+        : "plus_XML is not valid or compliant."
+    )
+
+    result = await validateXML(in_XML, logSteps)
+    const isInXMLCompliant = result.success
+    logSteps.push(
+      isInXMLCompliant
+        ? "in_XML is valid and compliant."
+        : "in_XML is not valid or compliant."
+    )
+
+    result = await validateXML(aggregate_XML, logSteps)
+    const isAggregateXMLCompliant = result.success
+    logSteps.push(
+      isAggregateXMLCompliant
+        ? "aggregate_XML is valid and compliant."
+        : "aggregate_XML is not valid or compliant."
+    )
+
+    // Step 8: Generate Outputs
+    out_XML = aggregate_XML
+    logSteps.push("Set aggregate_XML as out_XML.")
+
+    // Convert aggregate_XML to aggregate_XSD (Commented out as requested)
+    /*
+    aggregate_XSD = generateXSD(aggregate_XML, logSteps);
+    logSteps.push("Generated aggregate_XSD from aggregate_XML.");
+    */
+
+    // Convert in_XML to in_XSD (Commented out as requested)
+    /*
+    in_XSD = generateXSD(in_XML, logSteps);
+    logSteps.push("Generated in_XSD from in_XML.");
+    */
+
+    // Convert plus_XML to plus_XSD (Commented out as requested)
+    /*
+    plus_XSD = generateXSD(plus_XML, logSteps);
+    logSteps.push("Generated plus_XSD from plus_XML.");
+    */
+
+    // Convert out_XML to YAML and JSON
+    out_YAML = await XMLtoYAML(out_XML)
+    logSteps.push("Converted out_XML to out_YAML.")
+    out_JSON = await XMLtoJSON(out_XML)
+    logSteps.push("Converted out_XML to out_JSON.")
+
+    // Step 9: Logging Verbose Outputs
+
+    logSteps.push("Processing for case completed successfully.")
+    return {
+      plus_JSON: plus_JSON,
+      plus_XML: plus_XML,
+      // plus_XSD: plus_XSD,
+      in_YAML: in_YAML,
+      in_XML: in_XML,
+      // in_XSD: in_XSD,
+      aggregate_XML: aggregate_XML,
+      // aggregate_XSD: aggregate_XSD,
+      // XSLT: XSLT,
+      out_YAML: out_YAML,
+      out_JSON: out_JSON,
+      out_XML: out_XML,
+      // out_XSD: out_XSD,
+      logSteps,
+    }
+  } catch (error) {
+    logSteps.push(`Error occurred: ${error.message}`)
+    throw error
+  }
+}
+
+
+async function handleCasePlusYAMLAggregateXSLTInXML(
+  plus_YAML,
+  aggregate_XSLT,
+  in_XML,
+  logSteps
+) {
+  let plus_JSON, plus_XML, plus_XSD, in_YAML, in_JSON, in_XSD
+  let aggregate_XML, aggregate_XSD, out_YAML, out_JSON, out_XML, out_XSD
+  const verbose = true // Verbose is set to true
+
+  try {
+    logSteps.push("Starting validation and processing for case.")
+
+    // Step 1: Validate plus_YAML
+    plus_YAML = normalizeYAML(plus_YAML) // Normalize the YAML input to ensure proper formatting
+    let result = await validateYAML(plus_YAML, logSteps)
+    let isValidYAML = result.success
+    logSteps.push(isValidYAML ? "plus_YAML is valid" : "plus_YAML is invalid")
+
+    // Step 3: Generate plus_JSON and Validate
+    plus_JSON = YAMLtoJSON(plus_YAML)
+    logSteps.push("Converted plus_YAML to plus_JSON.")
+    const isValidPlusJSON = await validateJSON(plus_JSON, logSteps, verbose)
+    logSteps.push(
+      isValidPlusJSON
+        ? "plus_JSON validation succeeded."
+        : "plus_JSON validation failed."
+    )
+
+    result = await validateXML(in_XML, logSteps)
+    const isXMLCompliant = result.success
+    logSteps.push(
+      isXMLCompliant
+        ? "XML is valid and compliant."
+        : "XML is not valid or compliant."
+    )
+
+    // Step 4: Convert plus_YAML to XML
+    plus_XML = YAMLtoXML(plus_YAML)
+    logSteps.push("Converted plus_YAML to plus_XML.")
+
+    // Step 5: Convert in_JSON to YAML and XML
+    in_YAML = XMLtoYAML(in_XML)
+    logSteps.push("Converted in_JSON to in_YAML.")
+    // in_XML = JSONtoXML(in_JSON)
+    // logSteps.push("Converted in_JSON to in_XML.")
+    combinedXML = combineXMLStrings(in_XML, plus_XML, "aggregate")
+    logSteps.push("Successfully combined transformed XMLs into aggregate_XML.")
+
+    // Step 6: Combine XMLs using aggregate_XSLT
+    aggregate_XML = await transformXMLUsingXSLT(combinedXML, aggregate_XSLT)
+    logSteps.push(
+      "Transformed XML using aggregate_XSLT to produce aggregate_XML."
+    )
+
+    // Step 7: Compliance Checks for XMLs
+    result = await validateXML(plus_XML, logSteps)
+    const isPlusXMLCompliant = result.success
+    logSteps.push(
+      isPlusXMLCompliant
+        ? "plus_XML is valid and compliant."
+        : "plus_XML is not valid or compliant."
+    )
+
+    result = await validateXML(in_XML, logSteps)
+    const isInXMLCompliant = result.success
+    logSteps.push(
+      isInXMLCompliant
+        ? "in_XML is valid and compliant."
+        : "in_XML is not valid or compliant."
+    )
+
+    result = await validateXML(aggregate_XML, logSteps)
+    const isAggregateXMLCompliant = result.success
+    logSteps.push(
+      isAggregateXMLCompliant
+        ? "aggregate_XML is valid and compliant."
+        : "aggregate_XML is not valid or compliant."
+    )
+
+    // Step 8: Generate Outputs
+    out_XML = aggregate_XML
+    logSteps.push("Set aggregate_XML as out_XML.")
+
+    // Convert aggregate_XML to aggregate_XSD (Commented out as requested)
+    /*
+    aggregate_XSD = generateXSD(aggregate_XML, logSteps);
+    logSteps.push("Generated aggregate_XSD from aggregate_XML.");
+    */
+
+    // Convert in_XML to in_XSD (Commented out as requested)
+    /*
+    in_XSD = generateXSD(in_XML, logSteps);
+    logSteps.push("Generated in_XSD from in_XML.");
+    */
+
+    // Convert plus_XML to plus_XSD (Commented out as requested)
+    /*
+    plus_XSD = generateXSD(plus_XML, logSteps);
+    logSteps.push("Generated plus_XSD from plus_XML.");
+    */
+
+    // Convert out_XML to YAML and JSON
+    out_YAML = await XMLtoYAML(out_XML)
+    logSteps.push("Converted out_XML to out_YAML.")
+    out_JSON = await XMLtoJSON(out_XML)
+    logSteps.push("Converted out_XML to out_JSON.")
+    in_JSON = YAMLtoJSON(in_YAML)
+    logSteps.push("Converted in_YAML to in_JSON")
+
+    // Step 9: Logging Verbose Outputs
+
+    logSteps.push("Processing for case completed successfully.")
+    return {
+      plus_JSON: plus_JSON,
+      plus_XML: plus_XML,
+      // plus_XSD: plus_XSD,
+      in_YAML: in_YAML,
+      in_JSOM: in_JSON,
+      // in_XSD: in_XSD,
+      aggregate_XML: aggregate_XML,
+      // aggregate_XSD: aggregate_XSD,
+      // XSLT: XSLT,
+      out_YAML: out_YAML,
+      out_JSON: out_JSON,
+      out_XML: out_XML,
+      // out_XSD: out_XSD,
+      logSteps,
+    }
+  } catch (error) {
+    logSteps.push(`Error occurred: ${error.message}`)
+    throw error
+  }
+}
+
+async function handleCasePlusYAMLAggregateXSLTInXML(
+  plus_YAML,
+  aggregate_XSLT,
+  in_XML,
+  in_XSD,
+  logSteps
+) {
+  let plus_JSON, plus_XML, plus_XSD, in_YAML, in_JSON, in_XSD
+  let aggregate_XML, aggregate_XSD, out_YAML, out_JSON, out_XML, out_XSD
+  const verbose = true // Verbose is set to true
+
+  try {
+    logSteps.push("Starting validation and processing for case.")
+
+    // Step 1: Validate plus_YAML
+    const isValidPlusYAML = await validateYAML(plus_YAML, logSteps, verbose)
+    logSteps.push(
+      isValidPlusYAML
+        ? "plus_YAML validation succeeded."
+        : "plus_YAML validation failed."
+    )
+
+    // Step 2: Validate in_JSON
+    // const isValidInJSON = await validateJSON(in_JSON, logSteps, verbose)
+    // logSteps.push(
+    //   isValidInJSON
+    //     ? "in_JSON validation succeeded."
+    //     : "in_JSON validation failed."
+    // )
+
+    // Step 3: Generate plus_JSON and Validate
+    plus_JSON = YAMLtoJSON(plus_YAML)
+    logSteps.push("Converted plus_YAML to plus_JSON.")
+    const isValidPlusJSON = await validateJSON(plus_JSON, logSteps, verbose)
+    logSteps.push(
+      isValidPlusJSON
+        ? "plus_JSON validation succeeded."
+        : "plus_JSON validation failed."
+    )
+
+    // Step 4: Convert plus_YAML to XML
+    plus_XML = YAMLtoXML(plus_YAML)
+    logSteps.push("Converted plus_YAML to plus_XML.")
+
+    // Step 5: Convert in_JSON to YAML and XML
+    in_YAML = XMLtoYAML(in_XML)
+    logSteps.push("Converted in_JSON to in_YAML.")
+    // in_XML = JSONtoXML(in_JSON)
+    // logSteps.push("Converted in_JSON to in_XML.")
+    combinedXML = combineXMLStrings(in_XML, plus_XML, "aggregate")
+    logSteps.push("Successfully combined transformed XMLs into aggregate_XML.")
+
+    // Step 6: Combine XMLs using aggregate_XSLT
+    aggregate_XML = await transformXMLUsingXSLT(combinedXML, aggregate_XSLT)
+    logSteps.push(
+      "Transformed XML using aggregate_XSLT to produce aggregate_XML."
+    )
+
+    // Step 7: Compliance Checks for XMLs
+    const isPlusXMLCompliant = await validateXML(plus_XML, logSteps)
+    logSteps.push(
+      isPlusXMLCompliant
+        ? "plus_XML is valid and compliant."
+        : "plus_XML is not valid or compliant."
+    )
+
+    const isInXMLCompliant = await validateXML(in_XML, logSteps)
+    logSteps.push(
+      isInXMLCompliant
+        ? "in_XML is valid and compliant."
+        : "in_XML is not valid or compliant."
+    )
+
+    const isCompliantWithInputXSD = await validateXSD(in_XML, in_XSD, logSteps)
+    logSteps.push(
+      isCompliantWithInputXSD
+        ? "XML is compliant with input XSD"
+        : "XML is not compliant with input XSD"
+    )
+
+    const isAggregateXMLCompliant = await validateXML(aggregate_XML, logSteps)
+    logSteps.push(
+      isAggregateXMLCompliant
+        ? "aggregate_XML is valid and compliant."
+        : "aggregate_XML is not valid or compliant."
+    )
+
+    // Step 8: Generate Outputs
+    out_XML = aggregate_XML
+    logSteps.push("Set aggregate_XML as out_XML.")
+
+    // Convert aggregate_XML to aggregate_XSD (Commented out as requested)
+    /*
+    aggregate_XSD = generateXSD(aggregate_XML, logSteps);
+    logSteps.push("Generated aggregate_XSD from aggregate_XML.");
+    */
+
+    // Convert in_XML to in_XSD (Commented out as requested)
+    /*
+    in_XSD = generateXSD(in_XML, logSteps);
+    logSteps.push("Generated in_XSD from in_XML.");
+    */
+
+    // Convert plus_XML to plus_XSD (Commented out as requested)
+    /*
+    plus_XSD = generateXSD(plus_XML, logSteps);
+    logSteps.push("Generated plus_XSD from plus_XML.");
+    */
+
+    // Convert out_XML to YAML and JSON
+    out_YAML = await XMLtoYAML(out_XML)
+    logSteps.push("Converted out_XML to out_YAML.")
+    out_JSON = await XMLtoJSON(out_XML)
+    logSteps.push("Converted out_XML to out_JSON.")
+    in_JSON = YAMLtoJSON(in_YAML)
+    logSteps.push("Converted in_YAML to in_JSON")
+
+    // Step 9: Logging Verbose Outputs
+
+    logSteps.push("Processing for case completed successfully.")
+    return {
+      plus_JSON: plus_JSON,
+      plus_XML: plus_XML,
+      // plus_XSD: plus_XSD,
+      in_YAML: in_YAML,
+      in_JSOM: in_JSON,
+      // in_XSD: in_XSD,
+      aggregate_XML: aggregate_XML,
+      // aggregate_XSD: aggregate_XSD,
+      // XSLT: XSLT,
+      out_YAML: out_YAML,
+      out_JSON: out_JSON,
+      out_XML: out_XML,
+      // out_XSD: out_XSD,
+      logSteps,
+    }
+  } catch (error) {
+    logSteps.push(`Error occurred: ${error.message}`)
+    throw error
+  }
+}
+
+
+async function handleCasePlusYAMLAggregateXSLTInXML(
+  plus_YAML,
+  plus_XSD,
+  aggregate_XSLT,
+  in_XML,
+  in_XSD,
+  logSteps
+) {
+  let plus_JSON, plus_XML, plus_XSD, in_YAML, in_JSON, in_XSD
+  let aggregate_XML, aggregate_XSD, out_YAML, out_JSON, out_XML, out_XSD
+  const verbose = true // Verbose is set to true
+
+  try {
+    logSteps.push("Starting validation and processing for case.")
+
+    // Step 1: Validate plus_YAML
+    const isValidPlusYAML = await validateYAML(plus_YAML, logSteps, verbose)
+    logSteps.push(
+      isValidPlusYAML
+        ? "plus_YAML validation succeeded."
+        : "plus_YAML validation failed."
+    )
+
+    // Step 2: Validate in_JSON
+    // const isValidInJSON = await validateJSON(in_JSON, logSteps, verbose)
+    // logSteps.push(
+    //   isValidInJSON
+    //     ? "in_JSON validation succeeded."
+    //     : "in_JSON validation failed."
+    // )
+
+    // Step 3: Generate plus_JSON and Validate
+    plus_JSON = YAMLtoJSON(plus_YAML)
+    logSteps.push("Converted plus_YAML to plus_JSON.")
+    const isValidPlusJSON = await validateJSON(plus_JSON, logSteps, verbose)
+    logSteps.push(
+      isValidPlusJSON
+        ? "plus_JSON validation succeeded."
+        : "plus_JSON validation failed."
+    )
+
+    // Step 4: Convert plus_YAML to XML
+    plus_XML = YAMLtoXML(plus_YAML)
+    logSteps.push("Converted plus_YAML to plus_XML.")
+
+    // Step 5: Convert in_JSON to YAML and XML
+    in_YAML = XMLtoYAML(in_XML)
+    logSteps.push("Converted in_JSON to in_YAML.")
+    // in_XML = JSONtoXML(in_JSON)
+    // logSteps.push("Converted in_JSON to in_XML.")
+    combinedXML = combineXMLStrings(in_XML, plus_XML, "aggregate")
+    logSteps.push("Successfully combined transformed XMLs into aggregate_XML.")
+
+    // Step 6: Combine XMLs using aggregate_XSLT
+    aggregate_XML = await transformXMLUsingXSLT(combinedXML, aggregate_XSLT)
+    logSteps.push(
+      "Transformed XML using aggregate_XSLT to produce aggregate_XML."
+    )
+
+    // Step 7: Compliance Checks for XMLs
+    const isPlusXMLCompliant = await validateXML(plus_XML, logSteps)
+    logSteps.push(
+      isPlusXMLCompliant
+        ? "plus_XML is valid and compliant."
+        : "plus_XML is not valid or compliant."
+    )
+
+    const isInXMLCompliant = await validateXML(in_XML, logSteps)
+    logSteps.push(
+      isInXMLCompliant
+        ? "in_XML is valid and compliant."
+        : "in_XML is not valid or compliant."
+    )
+
+    const isCompliantWithInputXSD = await validateXSD(in_XML, in_XSD, logSteps)
+    logSteps.push(
+      isCompliantWithInputXSD
+        ? "XML is compliant with input XSD"
+        : "XML is not compliant with input XSD"
+    )
+
+    const isCompliantWithPlusXSD = await validateXSD(plus_XML, plus_XSD, logSteps)
+    logSteps.push(
+      isCompliantWithPlusXSD
+        ? "plus_XML is compliant with plus_XSD"
+        : "plus_XML is not compliant with plus_XSD"
+    )
+
+    const isAggregateXMLCompliant = await validateXML(aggregate_XML, logSteps)
+    logSteps.push(
+      isAggregateXMLCompliant
+        ? "aggregate_XML is valid and compliant."
+        : "aggregate_XML is not valid or compliant."
+    )
+
+    // Step 8: Generate Outputs
+    out_XML = aggregate_XML
+    logSteps.push("Set aggregate_XML as out_XML.")
+
+    // Convert aggregate_XML to aggregate_XSD (Commented out as requested)
+    /*
+    aggregate_XSD = generateXSD(aggregate_XML, logSteps);
+    logSteps.push("Generated aggregate_XSD from aggregate_XML.");
+    */
+
+    // Convert in_XML to in_XSD (Commented out as requested)
+    /*
+    in_XSD = generateXSD(in_XML, logSteps);
+    logSteps.push("Generated in_XSD from in_XML.");
+    */
+
+    // Convert plus_XML to plus_XSD (Commented out as requested)
+    /*
+    plus_XSD = generateXSD(plus_XML, logSteps);
+    logSteps.push("Generated plus_XSD from plus_XML.");
+    */
+
+    // Convert out_XML to YAML and JSON
+    out_YAML = await XMLtoYAML(out_XML)
+    logSteps.push("Converted out_XML to out_YAML.")
+    out_JSON = await XMLtoJSON(out_XML)
+    logSteps.push("Converted out_XML to out_JSON.")
+    in_JSON = YAMLtoJSON(in_YAML)
+    logSteps.push("Converted in_YAML to in_JSON")
+
+    // Step 9: Logging Verbose Outputs
+
+    logSteps.push("Processing for case completed successfully.")
+    return {
+      plus_JSON: plus_JSON,
+      plus_XML: plus_XML,
+      // plus_XSD: plus_XSD,
+      in_YAML: in_YAML,
+      in_JSOM: in_JSON,
+      // in_XSD: in_XSD,
+      aggregate_XML: aggregate_XML,
+      // aggregate_XSD: aggregate_XSD,
+      // XSLT: XSLT,
+      out_YAML: out_YAML,
+      out_JSON: out_JSON,
+      out_XML: out_XML,
+      // out_XSD: out_XSD,
+      logSteps,
+    }
+  } catch (error) {
+    logSteps.push(`Error occurred: ${error.message}`)
+    throw error
+  }
+}
+
+
+async function handleCasePlusYAMLAggregateXSLTInXML(
+  plus_YAML,
+  plus_XSD,
+  aggregate_XSLT,
+  in_XML,
+  in_XSD,
+  logSteps
+) {
+  let plus_JSON, plus_XML, plus_XSD, in_YAML, in_JSON, in_XSD
+  let aggregate_XML, aggregate_XSD, out_YAML, out_JSON, out_XML, out_XSD
+  const verbose = true // Verbose is set to true
+
+  try {
+    logSteps.push("Starting validation and processing for case.")
+
+    // Step 1: Validate plus_YAML
+    const isValidPlusYAML = await validateYAML(plus_YAML, logSteps, verbose)
+    logSteps.push(
+      isValidPlusYAML
+        ? "plus_YAML validation succeeded."
+        : "plus_YAML validation failed."
+    )
+
+    // Step 2: Validate in_JSON
+    // const isValidInJSON = await validateJSON(in_JSON, logSteps, verbose)
+    // logSteps.push(
+    //   isValidInJSON
+    //     ? "in_JSON validation succeeded."
+    //     : "in_JSON validation failed."
+    // )
+
+    // Step 3: Generate plus_JSON and Validate
+    plus_JSON = YAMLtoJSON(plus_YAML)
+    logSteps.push("Converted plus_YAML to plus_JSON.")
+    const isValidPlusJSON = await validateJSON(plus_JSON, logSteps, verbose)
+    logSteps.push(
+      isValidPlusJSON
+        ? "plus_JSON validation succeeded."
+        : "plus_JSON validation failed."
+    )
+
+    // Step 4: Convert plus_YAML to XML
+    plus_XML = YAMLtoXML(plus_YAML)
+    logSteps.push("Converted plus_YAML to plus_XML.")
+
+    // Step 5: Convert in_JSON to YAML and XML
+    in_YAML = XMLtoYAML(in_XML)
+    logSteps.push("Converted in_JSON to in_YAML.")
+    // in_XML = JSONtoXML(in_JSON)
+    // logSteps.push("Converted in_JSON to in_XML.")
+    combinedXML = combineXMLStrings(in_XML, plus_XML, "aggregate")
+    logSteps.push("Successfully combined transformed XMLs into aggregate_XML.")
+
+    // Step 6: Combine XMLs using aggregate_XSLT
+    aggregate_XML = await transformXMLUsingXSLT(combinedXML, aggregate_XSLT)
+    logSteps.push(
+      "Transformed XML using aggregate_XSLT to produce aggregate_XML."
+    )
+
+    // Step 7: Compliance Checks for XMLs
+    const isPlusXMLCompliant = await validateXML(plus_XML, logSteps)
+    logSteps.push(
+      isPlusXMLCompliant
+        ? "plus_XML is valid and compliant."
+        : "plus_XML is not valid or compliant."
+    )
+
+    const isInXMLCompliant = await validateXML(in_XML, logSteps)
+    logSteps.push(
+      isInXMLCompliant
+        ? "in_XML is valid and compliant."
+        : "in_XML is not valid or compliant."
+    )
+
+    const isCompliantWithInputXSD = await validateXSD(in_XML, in_XSD, logSteps)
+    logSteps.push(
+      isCompliantWithInputXSD
+        ? "XML is compliant with input XSD"
+        : "XML is not compliant with input XSD"
+    )
+
+    const isCompliantWithPlusXSD = await validateXSD(
+      plus_XML,
+      plus_XSD,
+      logSteps
+    )
+    logSteps.push(
+      isCompliantWithPlusXSD
+        ? "plus_XML is compliant with plus_XSD"
+        : "plus_XML is not compliant with plus_XSD"
+    )
+
+    const isAggregateXMLCompliant = await validateXML(aggregate_XML, logSteps)
+    logSteps.push(
+      isAggregateXMLCompliant
+        ? "aggregate_XML is valid and compliant."
+        : "aggregate_XML is not valid or compliant."
+    )
+
+    // Step 8: Generate Outputs
+    out_XML = aggregate_XML
+    logSteps.push("Set aggregate_XML as out_XML.")
+
+    // Convert aggregate_XML to aggregate_XSD (Commented out as requested)
+    /*
+    aggregate_XSD = generateXSD(aggregate_XML, logSteps);
+    logSteps.push("Generated aggregate_XSD from aggregate_XML.");
+    */
+
+    // Convert in_XML to in_XSD (Commented out as requested)
+    /*
+    in_XSD = generateXSD(in_XML, logSteps);
+    logSteps.push("Generated in_XSD from in_XML.");
+    */
+
+    // Convert plus_XML to plus_XSD (Commented out as requested)
+    /*
+    plus_XSD = generateXSD(plus_XML, logSteps);
+    logSteps.push("Generated plus_XSD from plus_XML.");
+    */
+
+    // Convert out_XML to YAML and JSON
+    out_YAML = await XMLtoYAML(out_XML)
+    logSteps.push("Converted out_XML to out_YAML.")
+    out_JSON = await XMLtoJSON(out_XML)
+    logSteps.push("Converted out_XML to out_JSON.")
+    in_JSON = YAMLtoJSON(in_YAML)
+    logSteps.push("Converted in_YAML to in_JSON")
+
+    // Step 9: Logging Verbose Outputs
+
+    logSteps.push("Processing for case completed successfully.")
+    return {
+      plus_JSON: plus_JSON,
+      plus_XML: plus_XML,
+      // plus_XSD: plus_XSD,
+      in_YAML: in_YAML,
+      in_JSOM: in_JSON,
+      // in_XSD: in_XSD,
+      aggregate_XML: aggregate_XML,
+      // aggregate_XSD: aggregate_XSD,
+      // XSLT: XSLT,
+      out_YAML: out_YAML,
+      out_JSON: out_JSON,
+      out_XML: out_XML,
+      // out_XSD: out_XSD,
+      logSteps,
+    }
+  } catch (error) {
+    logSteps.push(`Error occurred: ${error.message}`)
+    throw error
+  }
+}
+
+
+async function handleCasePlusYAMLAggregateXSLTInXML(
+  plus_YAML,
+  plus_XSD,
+  aggregate_XSLT,
+  map_XSLT,
+  in_XML,
+  in_XSD,
+  logSteps
+) {
+  let plus_JSON, plus_XML, plus_XSD, in_YAML, in_JSON, in_XSD
+  let aggregate_XML, aggregate_XSD, out_YAML, out_JSON, out_XML, out_XSD
+  const verbose = true // Verbose is set to true
+
+  try {
+    logSteps.push("Starting validation and processing for case.")
+
+    // Step 1: Validate plus_YAML
+    const isValidPlusYAML = await validateYAML(plus_YAML, logSteps, verbose)
+    logSteps.push(
+      isValidPlusYAML
+        ? "plus_YAML validation succeeded."
+        : "plus_YAML validation failed."
+    )
+
+    // Step 2: Validate in_JSON
+    // const isValidInJSON = await validateJSON(in_JSON, logSteps, verbose)
+    // logSteps.push(
+    //   isValidInJSON
+    //     ? "in_JSON validation succeeded."
+    //     : "in_JSON validation failed."
+    // )
+
+    // Step 3: Generate plus_JSON and Validate
+    plus_JSON = YAMLtoJSON(plus_YAML)
+    logSteps.push("Converted plus_YAML to plus_JSON.")
+    const isValidPlusJSON = await validateJSON(plus_JSON, logSteps, verbose)
+    logSteps.push(
+      isValidPlusJSON
+        ? "plus_JSON validation succeeded."
+        : "plus_JSON validation failed."
+    )
+
+    // Step 4: Convert plus_YAML to XML
+    plus_XML = YAMLtoXML(plus_YAML)
+    logSteps.push("Converted plus_YAML to plus_XML.")
+
+    // Step 5: Convert in_JSON to YAML and XML
+    in_YAML = XMLtoYAML(in_XML)
+    logSteps.push("Converted in_JSON to in_YAML.")
+    // in_XML = JSONtoXML(in_JSON)
+    // logSteps.push("Converted in_JSON to in_XML.")
+    combinedXML = combineXMLStrings(in_XML, plus_XML, "aggregate")
+    logSteps.push("Successfully combined transformed XMLs into aggregate_XML.")
+
+    // Step 6: Combine XMLs using aggregate_XSLT
+    aggregate_XML = await transformXMLUsingXSLT(combinedXML, aggregate_XSLT)
+    logSteps.push(
+      "Transformed XML using aggregate_XSLT to produce aggregate_XML."
+    )
+
+    // Step 7: Compliance Checks for XMLs
+    const isPlusXMLCompliant = await validateXML(plus_XML, logSteps)
+    logSteps.push(
+      isPlusXMLCompliant
+        ? "plus_XML is valid and compliant."
+        : "plus_XML is not valid or compliant."
+    )
+
+    const isInXMLCompliant = await validateXML(in_XML, logSteps)
+    logSteps.push(
+      isInXMLCompliant
+        ? "in_XML is valid and compliant."
+        : "in_XML is not valid or compliant."
+    )
+
+    const isCompliantWithInputXSD = await validateXSD(in_XML, in_XSD, logSteps)
+    logSteps.push(
+      isCompliantWithInputXSD
+        ? "XML is compliant with input XSD"
+        : "XML is not compliant with input XSD"
+    )
+
+    const isCompliantWithPlusXSD = await validateXSD(
+      plus_XML,
+      plus_XSD,
+      logSteps
+    )
+    logSteps.push(
+      isCompliantWithPlusXSD
+        ? "plus_XML is compliant with plus_XSD"
+        : "plus_XML is not compliant with plus_XSD"
+    )
+
+    const isAggregateXMLCompliant = await validateXML(aggregate_XML, logSteps)
+    logSteps.push(
+      isAggregateXMLCompliant
+        ? "aggregate_XML is valid and compliant."
+        : "aggregate_XML is not valid or compliant."
+    )
+
+    // Step 8: Generate Outputs
+    out_XML = aggregate_XML
+    logSteps.push("Set aggregate_XML as out_XML.")
+
+    // Convert aggregate_XML to aggregate_XSD (Commented out as requested)
+    /*
+    aggregate_XSD = generateXSD(aggregate_XML, logSteps);
+    logSteps.push("Generated aggregate_XSD from aggregate_XML.");
+    */
+
+    // Convert in_XML to in_XSD (Commented out as requested)
+    /*
+    in_XSD = generateXSD(in_XML, logSteps);
+    logSteps.push("Generated in_XSD from in_XML.");
+    */
+
+    // Convert plus_XML to plus_XSD (Commented out as requested)
+    /*
+    plus_XSD = generateXSD(plus_XML, logSteps);
+    logSteps.push("Generated plus_XSD from plus_XML.");
+    */
+
+    // Convert out_XML to YAML and JSON
+    out_YAML = await XMLtoYAML(out_XML)
+    logSteps.push("Converted out_XML to out_YAML.")
+    out_JSON = await XMLtoJSON(out_XML)
+    logSteps.push("Converted out_XML to out_JSON.")
+    in_JSON = YAMLtoJSON(in_YAML)
+    logSteps.push("Converted in_YAML to in_JSON")
+
+    // Step 9: Logging Verbose Outputs
+
+    logSteps.push("Processing for case completed successfully.")
+    return {
+      plus_JSON: plus_JSON,
+      plus_XML: plus_XML,
+      // plus_XSD: plus_XSD,
+      in_YAML: in_YAML,
+      in_JSOM: in_JSON,
+      // in_XSD: in_XSD,
+      aggregate_XML: aggregate_XML,
+      // aggregate_XSD: aggregate_XSD,
+      // XSLT: XSLT,
+      out_YAML: out_YAML,
+      out_JSON: out_JSON,
+      out_XML: out_XML,
+      // out_XSD: out_XSD,
+      logSteps,
+    }
+  } catch (error) {
+    logSteps.push(`Error occurred: ${error.message}`)
+    throw error
+  }
+}
 
 
 
@@ -2288,26 +3878,28 @@ function normalizeXML(xmlString) {
 //   input_format: "in_JSON",
 // }
 
-// let body = {
-//   in_YAML:
-//     "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/recr1RGoaSKRxUbd0/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
-//   in_JSON:
-//     "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/rec786n3UYEyRNhiu/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
-//   in_XML:
-//     "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/rec4u5NWYb3S69Ilh/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
-//   in_XSD:
-//     "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/recgdWklBCmuVmxIE/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
-//   in_XSLT:
-//     "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/recE38NCv8jviIMn6/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
-//   out_XSD:
-//     "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/reczwx2Pc6MQqHJcL/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
-//   verbose: false
-// }
-// exports
-//   .handler(body)
-//   .then((response) => {
-//     console.log("Test Result:", JSON.parse(response.body));
-//   });
+let body = {
+  in_YAML:
+    "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/recr1RGoaSKRxUbd0/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
+  in_JSON:
+    "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/rec786n3UYEyRNhiu/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
+  in_XML:
+    "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/rec4u5NWYb3S69Ilh/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
+  in_XSD:
+    "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/recgdWklBCmuVmxIE/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
+  in_XSLT:
+    "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/recE38NCv8jviIMn6/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
+  out_XSD:
+    "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/reczwx2Pc6MQqHJcL/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
+    plus_YAML:
+    "https://airtable.com/appW7fUkTEqqte9Jc/tblKrfebiQ84S7gDr/viwa6xdcNYZfpr0uU/recr1RGoaSKRxUbd0/fldqKo5KjCX98Ew0R?copyLinkToCellOrRecordOrigin=gridView",
+  verbose: false
+}
+exports
+  .handler(body)
+  .then((response) => {
+    console.log("Test Result:", JSON.parse(response.body));
+  });
 
   function cleanJsonString(input) {
     // Remove escape slashes from the string
